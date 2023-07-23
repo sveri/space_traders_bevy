@@ -5,6 +5,8 @@ use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::Deserialize;
 
+use crate::ship::Ships;
+
 #[derive(Debug, Deserialize)]
 struct GenericResponse<T> {
     data: T,
@@ -25,6 +27,13 @@ pub fn fetch_agent_details() -> AgentDetails {
     let resp = send_get("https://api.spacetraders.io/v2/my/agent");
     let agent_details: GenericResponse<AgentDetails> = serde_json::from_str(&resp).unwrap();
     agent_details.data
+}
+
+
+pub fn fetch_my_ships() -> Ships {
+    let resp = send_get("https://api.spacetraders.io/v2/my/ships");
+    let data_wrapper: GenericResponse<Ships> = serde_json::from_str(&resp).unwrap();
+    data_wrapper.data
 }
 
 fn send_get(url: &str) -> String {

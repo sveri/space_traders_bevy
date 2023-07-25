@@ -5,7 +5,6 @@ use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::Deserialize;
 
-use crate::ship::Ships;
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
@@ -29,6 +28,8 @@ impl AgentDetails {
     }
 }
 
+pub type Waypoints = Vec<Waypoint>;
+
 #[derive(Debug, Deserialize)]
 pub struct Waypoint {
     #[serde(alias = "systemSymbol")]
@@ -47,7 +48,7 @@ pub struct WaypointTrait {
 impl Waypoint {
     pub fn get_traits(&self) -> String {
         let ts = &self.traits;
-        ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(",")
+        ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(", ")
     }
 }
 
@@ -55,6 +56,12 @@ pub fn fetch_agent_details() -> AgentDetails {
     let resp = send_get("https://api.spacetraders.io/v2/my/agent");
     let agent_details: GenericResponse<AgentDetails> = serde_json::from_str(&resp).unwrap();
     agent_details.data
+}
+
+pub fn fetch_waypoints(system_symbol: &str) -> Waypoints {
+    let resp = send_get(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str());
+    let response: GenericResponse<Waypoints> = serde_json::from_str(&resp).unwrap();
+    response.data
 }
 
 pub(crate) fn send_get(url: &str) -> String {

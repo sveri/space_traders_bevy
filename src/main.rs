@@ -30,6 +30,8 @@ struct AgentDetailsText;
 fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
     let agent_details = st_client::fetch_agent_details();
     let ships = ship::fetch_my_ships();
+    dbg!(agent_details.get_headquarter_system_symbol());
+    let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
     // println!("{:?}", agent_details);
 
     // commands.spawn((
@@ -124,7 +126,25 @@ fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
         .with_text_alignment(TextAlignment::Center)
         .with_style(Style {
             position_type: PositionType::Absolute,
-            top: Val::Px(20.0 * (1 + idx) as f32),
+            top: Val::Px(20.0 * (1 + idx) as f32 + 20.0),
+            left: Val::Px(0.0),
+            ..default()
+        }),));
+    }
+
+    for (idx, waypoint) in waypoints.iter().enumerate() {
+        commands.spawn((TextBundle::from_section(
+            format!("{} - {}", waypoint.symbol, waypoint.get_traits()),
+            TextStyle {
+                font_size: 15.0,
+                color: Color::WHITE,
+                ..default()
+            },
+        ) // Set the alignment of the Text
+        .with_text_alignment(TextAlignment::Center)
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(20.0 * (1 + idx) as f32 + 80.0),
             left: Val::Px(0.0),
             ..default()
         }),));

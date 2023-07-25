@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.11.0", features = ["dynamic_linking"] }
 
-bevy_mod_reqwest = "0.11.0"
+# bevy_mod_reqwest = "0.11.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 
 dotenvy = "0.15.7"

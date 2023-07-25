@@ -227,19 +227,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-compat"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b48b4ff0c2026db683dea961cd8ea874737f56cffca86fa84415eaddc51c00d"
-dependencies = [
- "futures-core",
- "futures-io",
- "once_cell",
- "pin-project-lite",
- "tokio",
-]
-
-[[package]]
 name = "async-executor"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -700,22 +687,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "99dde80034660f7dbb473141c31f0a746acc7229f5a06ce769aba5f16fd592ab"
 dependencies = [
  "glam",
-]
-
-[[package]]
-name = "bevy_mod_reqwest"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bff494b6e60ca1850d69aadc62b5f2e98f0d65171f17b3f4e06986f8612bbdb"
-dependencies = [
- "async-compat",
- "bevy",
- "bytes",
- "crossbeam-channel",
- "futures-lite",
- "reqwest",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -3292,7 +3263,6 @@ name = "space_traders_bevy"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_mod_reqwest",
  "dotenvy",
  "reqwest",
  "serde",

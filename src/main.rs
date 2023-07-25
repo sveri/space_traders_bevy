@@ -1,11 +1,11 @@
 use std::error::Error;
 
 use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
-    sprite::{Anchor, MaterialMesh2dBundle},
+    sprite::MaterialMesh2dBundle,
 };
 
-use bevy_mod_reqwest::*;
 use ship::Ship;
 use st_client::Waypoint;
 
@@ -39,7 +39,11 @@ fn add_waypoints(mut commands: Commands) {
     })
 }
 
-fn setup(mut commands: Commands) { commands.spawn(Camera2dBundle::default()); }
+fn setup(mut commands: Commands) {
+    let mut bundle = Camera2dBundle::default();
+    bundle.projection.scale = 0.3;
+    commands.spawn(bundle);
+}
 
 #[derive(Component)]
 struct AgentDetailsText;
@@ -76,7 +80,7 @@ fn show_ships(time: Res<Time>, mut timer: ResMut<ShipUpdateTimer>, mut commands:
             commands.spawn(SpriteBundle {
                 sprite: Sprite {
                     color: Color::rgb(0.25, 0.25, 0.75),
-                    custom_size: Some(Vec2::new(10.0, 20.0)),
+                    custom_size: Some(Vec2::new(2.0, 4.0)),
                     ..default()
                 },
                 transform: Transform::from_translation(Vec3::new(
@@ -106,6 +110,46 @@ fn show_waypoints(
     }
 }
 
+fn player_camera_control(
+    kb: Res<Input<KeyCode>>, mut mouse_wheel_events: EventReader<MouseWheel>, time: Res<Time>,
+    mut query: Query<&mut OrthographicProjection, With<Camera>>,
+) {
+    let dist = 5.0 * time.delta().as_secs_f32();
+
+    for mut projection in query.iter_mut() {
+        for ev in mouse_wheel_events.iter() {
+            let mut log_scale = projection.scale.ln();
+            match ev.unit {
+                MouseScrollUnit::Line => {
+                    println!("Scroll (line units): vertical: {}, horizontal: {}", ev.y, ev.x);
+                    if ev.y > 0.0 {
+                        log_scale += dist;
+                    } else {
+                        log_scale -= dist;
+                    }
+                }
+                MouseScrollUnit::Pixel => {
+                    println!("Scroll (pixel units): vertical: {}, horizontal: {}", ev.y, ev.x);
+                }
+            }
+            projection.scale = log_scale.exp();
+        }
+    }
+
+    // for mut projection in query.iter_mut() {
+    //     let mut log_scale = projection.scale.ln();
+
+    //     if kb.pressed(KeyCode::PageUp) {
+    //         log_scale -= dist;
+    //     }
+    //     if kb.pressed(KeyCode::PageDown) {
+    //         log_scale += dist;
+    //     }
+
+    //     projection.scale = log_scale.exp();
+    // }
+}
+
 pub struct MainPlugin;
 
 impl Plugin for MainPlugin {
@@ -114,7 +158,7 @@ impl Plugin for MainPlugin {
             .insert_resource(ShipUpdateTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
             // .add_plugins(ReqwestPlugin)
             .add_systems(Startup, (setup, add_ships, add_waypoints, get_agent_details))
-            .add_systems(Update, (show_waypoints, show_ships));
+            .add_systems(Update, (show_waypoints, show_ships, player_camera_control));
     }
 }
 

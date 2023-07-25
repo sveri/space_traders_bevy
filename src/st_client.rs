@@ -1,6 +1,6 @@
-
 use std::env;
 
+use bevy::app::AppLabel;
 use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::Deserialize;
@@ -8,19 +8,47 @@ use serde::Deserialize;
 use crate::ship::Ships;
 
 #[derive(Debug, Deserialize)]
-struct GenericResponse<T> {
-    data: T,
+pub(crate) struct GenericResponse<T> {
+    pub data: T,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AgentDetails {
-    #[serde(alias = "accountId")]
-    account_id: String,
+    // #[serde(alias = "accountId")]
+    // account_id: String,
     pub symbol: String,
     pub headquarters: String,
     pub credits: i32,
     #[serde(alias = "startingFaction")]
     pub starting_faction: String,
+}
+
+impl AgentDetails {
+    pub fn get_headquarter_system_symbol(&self) -> String {
+        self.headquarters[0..self.headquarters.rfind('-').unwrap()].to_string()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Waypoint {
+    #[serde(alias = "systemSymbol")]
+    pub system_symbol: String,
+    pub symbol: String,
+    pub x: i32,
+    pub y: i32,
+    traits: Vec<WaypointTrait>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct WaypointTrait {
+    name: String,
+}
+
+impl Waypoint {
+    pub fn get_traits(&self) -> String {
+        let ts = &self.traits;
+        ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(",")
+    }
 }
 
 pub fn fetch_agent_details() -> AgentDetails {
@@ -29,14 +57,7 @@ pub fn fetch_agent_details() -> AgentDetails {
     agent_details.data
 }
 
-
-pub fn fetch_my_ships() -> Ships {
-    let resp = send_get("https://api.spacetraders.io/v2/my/ships");
-    let data_wrapper: GenericResponse<Ships> = serde_json::from_str(&resp).unwrap();
-    data_wrapper.data
-}
-
-fn send_get(url: &str) -> String {
+pub(crate) fn send_get(url: &str) -> String {
     let client = reqwest::blocking::Client::new();
     match send_with_header(client.get(url)) {
         Ok(resp) => resp.text().unwrap(),
@@ -45,10 +66,7 @@ fn send_get(url: &str) -> String {
 }
 
 fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
-
     req.header("Authorization", format!("Bearer {}", get_api_key())).send()
 }
 
-fn get_api_key() -> String {
-    env::var("SPACE_TRADERS_API_KEY").unwrap()
-}
+fn get_api_key() -> String { env::var("SPACE_TRADERS_API_KEY").unwrap() }

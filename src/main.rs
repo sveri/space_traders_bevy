@@ -4,8 +4,8 @@ use bevy::{prelude::*, sprite::Anchor};
 
 use bevy_mod_reqwest::*;
 
-mod st_client;
 mod ship;
+mod st_client;
 
 #[derive(Component)]
 struct Person;
@@ -22,15 +22,15 @@ fn add_people(mut commands: Commands) {
     commands.spawn((Person, Name("Zayna Nieves".to_string())));
 }
 
+fn setup(mut commands: Commands) { commands.spawn(Camera2dBundle::default()); }
+
 #[derive(Component)]
 struct AgentDetailsText;
 
 fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
     let agent_details = st_client::fetch_agent_details();
-    let ships = st_client::fetch_my_ships();
+    let ships = ship::fetch_my_ships();
     // println!("{:?}", agent_details);
-
-    commands.spawn(Camera2dBundle::default());
 
     // commands.spawn((
     //     // Create a TextBundle that has a Text with a list of sections.
@@ -59,7 +59,7 @@ fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
     //             color: Color::WHITE,
     //             ..default()
     //         },
-            
+
     //     )])
     //     .with_style(Style {
     //         left: Val::Px(5.0),
@@ -80,7 +80,13 @@ fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
         // Create a TextBundle that has a Text with a single section.
         TextBundle::from_section(
             // Accepts a `String` or any type that converts into a `String`, such as `&str`
-            format!("{}, Faction: {} HQs: {}", agent_details.symbol, agent_details.starting_faction, agent_details.headquarters),
+            format!(
+                "{}, Faction: {} HQs: {}, HQ system symbol: {}",
+                agent_details.symbol,
+                agent_details.starting_faction,
+                agent_details.headquarters,
+                agent_details.get_headquarter_system_symbol()
+            ),
             TextStyle {
                 font_size: 15.0,
                 color: Color::WHITE,
@@ -93,12 +99,36 @@ fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
             position_type: PositionType::Absolute,
             top: Val::Px(0.0),
             left: Val::Px(0.0),
-            // width: Val::Px(200.0),
-            // bottom: Val::Px(5.0),
-            // right: Val::Px(15.0),
             ..default()
         }),
     ));
+
+    for (idx, ship) in ships.iter().enumerate() {
+        commands.spawn((TextBundle::from_section(
+            format!(
+                "{} - {}, Location: {}, Crew: {}/{}, Fuel: {}/{}",
+                ship.symbol,
+                ship.nav.status,
+                ship.nav.waypoint_symbol,
+                ship.crew.current,
+                ship.crew.capacity,
+                ship.fuel.current,
+                ship.fuel.capacity
+            ),
+            TextStyle {
+                font_size: 15.0,
+                color: Color::WHITE,
+                ..default()
+            },
+        ) // Set the alignment of the Text
+        .with_text_alignment(TextAlignment::Center)
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(20.0 * (1 + idx) as f32),
+            left: Val::Px(0.0),
+            ..default()
+        }),));
+    }
 
     // let box_position = Vec2::new(window.single().resolution.width() / -2.0, 0.0);
 
@@ -110,14 +140,14 @@ fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
     //                 // color,
     //                 ..slightly_smaller_text_style.clone()
     //             },
-                
+
     //         )],
     //         ..Default::default()
     //     },
     //     transform: Transform::from_translation(box_position.extend(0.0)),
     //     // transform: Transform::from_xyz(
-            
-    //     //     window.single().resolution.width() / -2.0, 
+
+    //     //     window.single().resolution.width() / -2.0,
     //     //     0.0,
     //     //     // window.single().resolution.height() / -2.0,
     //     //     0.0
@@ -164,7 +194,7 @@ impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(ReqwestPlugin)
             .insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-            .add_systems(Startup, (add_people, get_agent_details))
+            .add_systems(Startup, (setup, add_people, get_agent_details))
             // .add_systems(Update, greet_people);
             ;
     }

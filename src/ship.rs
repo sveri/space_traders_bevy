@@ -1,6 +1,6 @@
+use crate::st_client;
 use bevy::prelude::Component;
 use serde::Deserialize;
-use crate::st_client;
 
 pub type Ships = Vec<Ship>;
 
@@ -16,7 +16,7 @@ pub struct Ship {
 pub struct Nav {
     pub status: String,
     #[serde(alias = "waypointSymbol")]
-    pub waypoint_symbol: String,    
+    pub waypoint_symbol: String,
     pub route: Route,
 }
 
@@ -29,13 +29,13 @@ pub struct Route {
 #[derive(Debug, Deserialize, Clone)]
 pub struct Departure {
     pub x: i32,
-    pub y: i32,   
+    pub y: i32,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Destination {
     pub x: i32,
-    pub y: i32,  
+    pub y: i32,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -58,7 +58,6 @@ pub struct Cargo {
     pub capacity: i32,
     pub units: i32,
 }
-
 
 pub fn fetch_my_ships() -> Ships {
     let resp = st_client::send_get("https://api.spacetraders.io/v2/my/ships");

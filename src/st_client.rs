@@ -5,7 +5,6 @@ use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::Deserialize;
 
-
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
     pub data: T,

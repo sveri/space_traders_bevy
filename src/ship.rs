@@ -1,26 +1,44 @@
+use bevy::prelude::Component;
 use serde::Deserialize;
 use crate::st_client;
 
 pub type Ships = Vec<Ship>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Component, Clone)]
 pub struct Ship {
     pub symbol: String,
     pub crew: Crew,
     pub fuel: Fuel,
     pub nav: Nav,
-    // pub x: i32,
-    // pub y: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Nav {
     pub status: String,
     #[serde(alias = "waypointSymbol")]
     pub waypoint_symbol: String,    
+    pub route: Route,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
+pub struct Route {
+    pub departure: Departure,
+    pub destination: Destination,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Departure {
+    pub x: i32,
+    pub y: i32,   
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Destination {
+    pub x: i32,
+    pub y: i32,  
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Crew {
     pub current: i32,
     pub capacity: i32,
@@ -29,13 +47,13 @@ pub struct Crew {
     pub wages: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Fuel {
     pub current: i32,
     pub capacity: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Cargo {
     pub capacity: i32,
     pub units: i32,

@@ -1,6 +1,6 @@
 use std::env;
 
-use bevy::app::AppLabel;
+use bevy::{app::AppLabel, prelude::Component};
 use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::Deserialize;
@@ -30,7 +30,7 @@ impl AgentDetails {
 
 pub type Waypoints = Vec<Waypoint>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Component, Clone)]
 pub struct Waypoint {
     #[serde(alias = "systemSymbol")]
     pub system_symbol: String,
@@ -40,7 +40,7 @@ pub struct Waypoint {
     traits: Vec<WaypointTrait>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct WaypointTrait {
     name: String,
 }

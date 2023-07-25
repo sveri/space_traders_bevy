@@ -1,8 +1,13 @@
 use std::error::Error;
 
-use bevy::{prelude::*, sprite::Anchor};
+use bevy::{
+    prelude::*,
+    sprite::{Anchor, MaterialMesh2dBundle},
+};
 
 use bevy_mod_reqwest::*;
+use ship::Ship;
+use st_client::Waypoint;
 
 mod ship;
 mod st_client;
@@ -16,10 +21,19 @@ struct Name(String);
 #[derive(Resource)]
 struct GreetTimer(Timer);
 
-fn add_people(mut commands: Commands) {
-    commands.spawn((Person, Name("Elaina Proctor".to_string())));
-    commands.spawn((Person, Name("Renzo Hume".to_string())));
-    commands.spawn((Person, Name("Zayna Nieves".to_string())));
+fn add_ships(mut commands: Commands) {
+    let ships = ship::fetch_my_ships();
+    ships.iter().for_each(|s| {
+        commands.spawn((s.to_owned()));
+    })
+}
+
+fn add_waypoints(mut commands: Commands) {
+    let agent_details = st_client::fetch_agent_details();
+    let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
+    waypoints.iter().for_each(|w| {
+        commands.spawn((w.to_owned()));
+    })
 }
 
 fn setup(mut commands: Commands) { commands.spawn(Camera2dBundle::default()); }
@@ -29,175 +43,30 @@ struct AgentDetailsText;
 
 fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
     let agent_details = st_client::fetch_agent_details();
-    let ships = ship::fetch_my_ships();
-    dbg!(agent_details.get_headquarter_system_symbol());
-    let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
-    // println!("{:?}", agent_details);
+    // let ships = ship::fetch_my_ships();
+    // let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
 
-    // commands.spawn((
-    //     // Create a TextBundle that has a Text with a list of sections.
-    //     TextBundle::from_sections([TextSection::new(
-    //         format!("{}, Faction: {} HQs: {}", agent_details.symbol, agent_details.starting_faction, agent_details.headquarters),
-    //         TextStyle {
-    //             font_size: 15.0,
-    //             color: Color::WHITE,
-    //             ..default()
-    //         },
-    //     )])
-    //     .with_style(Style {
-    //         left: Val::Px(5.0),
-    //         right: Val::Px(5.0),
-    //         ..default()
-    //     }),
-    //     AgentDetailsText,
-    // ));
-
-    // commands.spawn((
-    //     // Create a TextBundle that has a Text with a list of sections.
-    //     TextBundle::from_sections([TextSection::new(
-    //         format!("{}, Faction: {} HQs: {}", agent_details.symbol, agent_details.starting_faction, agent_details.headquarters),
-    //         TextStyle {
-    //             font_size: 15.0,
-    //             color: Color::WHITE,
-    //             ..default()
-    //         },
-
-    //     )])
-    //     .with_style(Style {
-    //         left: Val::Px(5.0),
-    //         right: Val::Px(20.0),
-    //         ..default()
-    //     }),
-    //     AgentDetailsText,
-    // ));
-
-    // let slightly_smaller_text_style = TextStyle {
-    //     // font,
-    //     font_size: 42.0,
-    //     color: Color::WHITE,
-    //     ..Default::default()
-    // };
-
-    commands.spawn((
-        // Create a TextBundle that has a Text with a single section.
-        TextBundle::from_section(
-            // Accepts a `String` or any type that converts into a `String`, such as `&str`
-            format!(
-                "{}, Faction: {} HQs: {}, HQ system symbol: {}",
-                agent_details.symbol,
-                agent_details.starting_faction,
-                agent_details.headquarters,
-                agent_details.get_headquarter_system_symbol()
-            ),
-            TextStyle {
-                font_size: 15.0,
-                color: Color::WHITE,
-                ..default()
-            },
-        ) // Set the alignment of the Text
-        .with_text_alignment(TextAlignment::Center)
-        // Set the style of the TextBundle itself.
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            top: Val::Px(0.0),
-            left: Val::Px(0.0),
+    commands.spawn((TextBundle::from_section(
+        format!(
+            "{}, Faction: {} HQs: {}, HQ system symbol: {}",
+            agent_details.symbol,
+            agent_details.starting_faction,
+            agent_details.headquarters,
+            agent_details.get_headquarter_system_symbol()
+        ),
+        TextStyle {
+            font_size: 15.0,
+            color: Color::WHITE,
             ..default()
-        }),
-    ));
-
-    for (idx, ship) in ships.iter().enumerate() {
-        commands.spawn((TextBundle::from_section(
-            format!(
-                "{} - {}, Location: {}, Crew: {}/{}, Fuel: {}/{}",
-                ship.symbol,
-                ship.nav.status,
-                ship.nav.waypoint_symbol,
-                ship.crew.current,
-                ship.crew.capacity,
-                ship.fuel.current,
-                ship.fuel.capacity
-            ),
-            TextStyle {
-                font_size: 15.0,
-                color: Color::WHITE,
-                ..default()
-            },
-        ) // Set the alignment of the Text
-        .with_text_alignment(TextAlignment::Center)
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            top: Val::Px(20.0 * (1 + idx) as f32 + 20.0),
-            left: Val::Px(0.0),
-            ..default()
-        }),));
-    }
-
-    for (idx, waypoint) in waypoints.iter().enumerate() {
-        commands.spawn((TextBundle::from_section(
-            format!("{} - {}", waypoint.symbol, waypoint.get_traits()),
-            TextStyle {
-                font_size: 15.0,
-                color: Color::WHITE,
-                ..default()
-            },
-        ) // Set the alignment of the Text
-        .with_text_alignment(TextAlignment::Center)
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            top: Val::Px(20.0 * (1 + idx) as f32 + 80.0),
-            left: Val::Px(0.0),
-            ..default()
-        }),));
-    }
-
-    // let box_position = Vec2::new(window.single().resolution.width() / -2.0, 0.0);
-
-    // commands.spawn(Text2dBundle {
-    //     text: Text {
-    //         sections: vec![TextSection::new(
-    //             format!(" AnchorasdfasfsafasfsadfasdfasddddddddddddddddSssadf:: "),
-    //             TextStyle {
-    //                 // color,
-    //                 ..slightly_smaller_text_style.clone()
-    //             },
-
-    //         )],
-    //         ..Default::default()
-    //     },
-    //     transform: Transform::from_translation(box_position.extend(0.0)),
-    //     // transform: Transform::from_xyz(
-
-    //     //     window.single().resolution.width() / -2.0,
-    //     //     0.0,
-    //     //     // window.single().resolution.height() / -2.0,
-    //     //     0.0
-    //     // ),
-    //     // text_anchor,
-    //     ..default()
-    // });
-
-    // for (text_anchor, color) in [
-    //     (Anchor::TopLeft, Color::RED),
-    //     (Anchor::TopRight, Color::GREEN),
-    //     (Anchor::BottomRight, Color::BLUE),
-    //     (Anchor::BottomLeft, Color::YELLOW),
-    // ] {
-    //     commands.spawn(Text2dBundle {
-    //         text: Text {
-    //             sections: vec![TextSection::new(
-    //                 format!(" Anchor::{text_anchor:?} "),
-    //                 TextStyle {
-    //                     color,
-    //                     ..slightly_smaller_text_style.clone()
-    //                 },
-    //             )],
-    //             ..Default::default()
-    //         },
-    //         transform: Transform::from_translation(250. * Vec3::Y),
-    //         text_anchor,
-    //         ..default()
-    //     });
-    // }
+        },
+    )
+    .with_text_alignment(TextAlignment::Center)
+    .with_style(Style {
+        position_type: PositionType::Absolute,
+        top: Val::Px(0.0),
+        left: Val::Px(0.0),
+        ..default()
+    }),));
 }
 
 // fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
@@ -208,14 +77,48 @@ fn get_agent_details(mut commands: Commands, window: Query<&Window>) {
 //     }
 // }
 
+fn show_ships(mut commands: Commands, query: Query<&Ship>) {
+    for ship in query.iter() {
+        commands.spawn(SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgb(0.25, 0.25, 0.75),
+                custom_size: Some(Vec2::new(10.0, 20.0)),
+                ..default()
+            },
+            transform: Transform::from_translation(Vec3::new(
+                ship.nav.route.departure.x as f32,
+                ship.nav.route.departure.y as f32,
+                0.,
+            )),
+            ..default()
+        });
+    }
+}
+
+fn show_waypoints(
+    mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<ColorMaterial>>,
+    query: Query<&Waypoint>,
+) {
+    for waypoint in query.iter() {
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::new(5.).into()).into(),
+            material: materials.add(ColorMaterial::from(Color::PURPLE)),
+            transform: Transform::from_translation(Vec3::new(waypoint.x as f32, waypoint.y as f32, 0.)),
+            ..default()
+        });
+    }
+}
+
 pub struct MainPlugin;
 
 impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(ReqwestPlugin)
             .insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-            .add_systems(Startup, (setup, add_people, get_agent_details))
-            // .add_systems(Update, greet_people);
+            .add_systems(Startup, (setup, add_ships, add_waypoints, get_agent_details))
+            
+            // .add_systems(Update, (show_waypoints))
+            // .add_systems(Update, (show_ships, show_waypoints))
             ;
     }
 }

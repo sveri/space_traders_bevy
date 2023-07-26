@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
     sprite::MaterialMesh2dBundle,
 };
@@ -12,6 +11,7 @@ use st_client::Waypoint;
 mod ship;
 mod st_client;
 mod util;
+mod controls;
 
 #[derive(Component)]
 struct Person;
@@ -52,14 +52,10 @@ fn add_waypoints(mut commands: Commands) {
     })
 }
 
-/// Used to help identify our main camera
-#[derive(Component)]
-struct MainCamera;
-
 fn setup(mut commands: Commands) {
     let mut bundle = Camera2dBundle::default();
     bundle.projection.scale = 0.234;
-    commands.spawn((bundle, MainCamera));
+    commands.spawn((bundle, controls::MainCamera));
 }
 
 #[derive(Component)]
@@ -122,65 +118,14 @@ fn show_waypoints(
             commands.spawn((MaterialMesh2dBundle {
                 mesh: meshes.add(shape::Circle::new(waypoint.get_display_size()).into()).into(),
                 material: materials.add(ColorMaterial::from(Color::PURPLE)),
-                transform: Transform::from_translation(Vec3::new(waypoint.x as f32, waypoint.y as f32, 0.)),
+                transform: Transform::from_translation(Vec3::new(waypoint.x, waypoint.y, 0.)),
                 ..default()
             }, WaypointRepresentation));
         }
     }
 }
 
-fn player_camera_control(
-    mut mouse_wheel_events: EventReader<MouseWheel>, time: Res<Time>, mut query: Query<&mut OrthographicProjection, With<Camera>>,
-) {
-    let dist = 5.0 * time.delta().as_secs_f32();
 
-    for mut projection in query.iter_mut() {
-        for ev in mouse_wheel_events.iter() {
-            let mut log_scale = projection.scale.ln();
-            match ev.unit {
-                MouseScrollUnit::Line => {
-                    println!("Scroll (line units): vertical: {}, horizontal: {}", ev.y, ev.x);
-                    if ev.y > 0.0 {
-                        log_scale -= dist;
-                    } else {
-                        log_scale += dist;
-                    }
-                }
-                MouseScrollUnit::Pixel => {
-                    println!("Scroll (pixel units): vertical: {}, horizontal: {}", ev.y, ev.x);
-                }
-            }
-            projection.scale = log_scale.exp();
-        }
-    }
-}
-
-fn mouse_click_handler(
-    buttons: Res<Input<MouseButton>>, windows: Query<&Window>, ships: Query<&Ship>, waypoints: Query<&Waypoint>,
-    mut select_ship_text: Query<&mut Text, (With<SelectedShipText>, Without<SelectedWaypointText>)>, mut select_waypoint_text: Query<&mut Text, (With<SelectedWaypointText>, Without<SelectedShipText>)>,
-    camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-) {
-    if buttons.just_released(MouseButton::Left) {
-        let window = windows.single();
-        let (camera, camera_transform) = camera_q.single();
-
-        if let Some(world_position) =
-            window.cursor_position().and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
-        {
-            if let Some(found_ship) = ships.iter().find(|ship| ship.in_bounds(world_position.x, world_position.y)) {
-                select_ship_text.single_mut().sections[0].value = format!("Selected Ship: {}", found_ship.symbol,);
-            } else if let Some(found_waypoint) = waypoints.iter().find(|waypoint| waypoint.in_bounds(world_position.x, world_position.y)) {
-                select_waypoint_text.single_mut().sections[0].value = format!("Selected Waypoint: {}", found_waypoint.symbol,);
-            } else {
-                select_ship_text.single_mut().sections[0].value = "Selected Ship: ".to_string();
-                select_waypoint_text.single_mut().sections[0].value = "Selected Waypoint: ".to_string();
-            }
-        }
-    }
-}
-
-#[derive(Component)]
-struct SelectedShipText;
 fn selected_ship_text(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
@@ -198,12 +143,10 @@ fn selected_ship_text(mut commands: Commands) {
             left: Val::Px(0.0),
             ..default()
         }),
-        SelectedShipText,
+        controls::SelectedShipText,
     ));
 }
 
-#[derive(Component)]
-struct SelectedWaypointText;
 fn selected_waypoint_text(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
@@ -221,7 +164,7 @@ fn selected_waypoint_text(mut commands: Commands) {
             left: Val::Px(0.0),
             ..default()
         }),
-        SelectedWaypointText,
+        controls::SelectedWaypointText,
     ));
 }
 
@@ -235,7 +178,7 @@ impl Plugin for MainPlugin {
                 Startup,
                 (setup, add_ships, add_waypoints, get_agent_details, selected_ship_text, selected_waypoint_text),
             )
-            .add_systems(Update, (show_waypoints, show_ships, player_camera_control, mouse_click_handler));
+            .add_systems(Update, (show_waypoints, show_ships, controls::player_camera_control, controls::mouse_click_handler));
     }
 }
 

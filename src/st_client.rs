@@ -5,6 +5,8 @@ use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::Deserialize;
 
+use crate::util::Point;
+
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
     pub data: T,
@@ -34,9 +36,23 @@ pub struct Waypoint {
     #[serde(alias = "systemSymbol")]
     pub system_symbol: String,
     pub symbol: String,
-    pub x: i32,
-    pub y: i32,
+    pub x: f32,
+    pub y: f32,
     traits: Vec<WaypointTrait>,
+}
+
+impl Waypoint {
+    pub fn get_display_size(&self) -> f32 {
+        5.
+    }
+
+    // pub fn get_position(&self) -> Point {
+    //     Point {x: self.x, y: self.y }
+    // }
+
+    pub fn in_bounds(&self, x: f32, y: f32) -> bool {
+        (x - self.x).powf(2.) + (y - self.y).powf(2.) <= self.get_display_size().powf(2.)
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]

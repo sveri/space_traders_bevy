@@ -43,6 +43,82 @@ fn setup(mut commands: Commands) {
     commands.spawn((bundle, controls::MainCamera));
 }
 
+const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
+
+fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn(ButtonBundle {
+                    style: Style {
+                        width: Val::Px(200.0),
+                        height: Val::Px(20.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        // horizontally center child text
+                        justify_content: JustifyContent::Center,
+                        // vertically center child text
+                        align_items: AlignItems::Center,
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(40.0),
+                        left: Val::Px(600.0),
+                        ..default()
+                    },
+                    border_color: BorderColor(Color::BLACK),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "Move Ship",
+                        TextStyle {
+                            font_size: 20.0,
+                            color: Color::rgb(0.9, 0.9, 0.9),
+                            ..default()
+                        },
+                    ));
+                });
+        });
+}
+
+fn move_button_system(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut text_query: Query<&mut Text>,
+) {
+    for (interaction, mut color, mut border_color, children) in &mut interaction_query {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        match *interaction {
+            Interaction::Pressed => {
+                text.sections[0].value = "Press".to_string();
+                // *color = PRESSED_BUTTON.into();
+                border_color.0 = Color::RED;
+                dbg!("pressed");
+            }
+            Interaction::Hovered => {
+                // text.sections[0].value = "Hover".to_string();
+                // *color = HOVERED_BUTTON.into();
+                // border_color.0 = Color::WHITE;
+            }
+            Interaction::None => {
+                // text.sections[0].value = "Button".to_string();
+                // *color = NORMAL_BUTTON.into();
+                // border_color.0 = Color::BLACK;
+            }
+        }
+    }
+}
+
 pub struct MainPlugin;
 
 impl Plugin for MainPlugin {
@@ -51,9 +127,26 @@ impl Plugin for MainPlugin {
             .insert_resource(ui::ShipUpdateTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
             .add_systems(
                 Startup,
-                (setup, add_ships, add_waypoints, ui::get_agent_details, ui::selected_ship_text, ui::selected_waypoint_text),
+                (
+                    setup,
+                    setup_move_button,
+                    add_ships,
+                    add_waypoints,
+                    ui::get_agent_details,
+                    ui::selected_ship_text,
+                    ui::selected_waypoint_text,
+                ),
             )
-            .add_systems(Update, (ui::show_waypoints, ui::show_ships, controls::player_camera_control, controls::mouse_click_handler));
+            .add_systems(
+                Update,
+                (
+                    ui::show_waypoints,
+                    ui::show_ships,
+                    controls::player_camera_control,
+                    controls::mouse_click_handler,
+                    move_button_system,
+                ),
+            );
     }
 }
 

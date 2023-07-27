@@ -58,7 +58,7 @@ pub(crate) fn mouse_click_handler(
             if let Some(found_ship) = ships.iter().find(|ship| ship.in_bounds(world_position.x, world_position.y)) {
                 select_ship_text.single_mut().sections[0].value = format!("Selected Ship: {}", found_ship.symbol,);
             } else if let Some(found_waypoint) = waypoints.iter().find(|waypoint| waypoint.in_bounds(world_position.x, world_position.y)) {
-                select_waypoint_text.single_mut().sections[0].value = format!("Selected Waypoint: {}", found_waypoint.symbol,);
+                select_waypoint_text.single_mut().sections[0].value = format!("Selected Waypoint: {} - {}", found_waypoint.symbol, found_waypoint.get_traits());
             } else {
                 select_ship_text.single_mut().sections[0].value = "Selected Ship: ".to_string();
                 select_waypoint_text.single_mut().sections[0].value = "Selected Waypoint: ".to_string();

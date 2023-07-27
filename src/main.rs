@@ -45,6 +45,12 @@ fn setup(mut commands: Commands) {
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 
+#[derive(Component)]
+struct MoveButton;
+
+#[derive(Component)]
+struct OrbitButton;
+
 fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(NodeBundle {
@@ -58,7 +64,7 @@ fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .with_children(|parent| {
             parent
-                .spawn(ButtonBundle {
+                .spawn((ButtonBundle {
                     style: Style {
                         width: Val::Px(200.0),
                         height: Val::Px(20.0),
@@ -75,10 +81,40 @@ fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
                     border_color: BorderColor(Color::BLACK),
                     background_color: NORMAL_BUTTON.into(),
                     ..default()
-                })
+                }, MoveButton))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Move Ship",
+                        TextStyle {
+                            font_size: 20.0,
+                            color: Color::rgb(0.9, 0.9, 0.9),
+                            ..default()
+                        },
+                    ));
+                });
+        }).with_children(|parent| {
+            parent
+                .spawn((ButtonBundle {
+                    style: Style {
+                        width: Val::Px(100.0),
+                        height: Val::Px(20.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        // horizontally center child text
+                        justify_content: JustifyContent::Center,
+                        // vertically center child text
+                        align_items: AlignItems::Center,
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(40.0),
+                        left: Val::Px(400.0),
+                        ..default()
+                    },
+                    border_color: BorderColor(Color::BLACK),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                }, OrbitButton))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "Orbit",
                         TextStyle {
                             font_size: 20.0,
                             color: Color::rgb(0.9, 0.9, 0.9),
@@ -92,7 +128,7 @@ fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn move_button_system(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-        (Changed<Interaction>, With<Button>),
+        (Changed<Interaction>, With<Button>, With<MoveButton>),
     >,
     mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>, selected_waypoint: Query<&controls::SelectedWaypoint>
 ) {

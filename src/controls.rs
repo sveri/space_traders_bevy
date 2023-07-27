@@ -72,7 +72,7 @@ pub(crate) fn mouse_click_handler(
             window.cursor_position().and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
         {
             if let Some(found_ship) = ships.iter().find(|ship| ship.in_bounds(world_position.x, world_position.y)) {
-                select_ship_text.single_mut().sections[0].value = format!("Selected Ship: {}", found_ship.symbol,);
+                select_ship_text.single_mut().sections[0].value = format!("Selected Ship: {}, Status: {}", found_ship.symbol, found_ship.nav.status);
                 commands.spawn(SelectedShip {
                     ship: found_ship.clone(),
                 });

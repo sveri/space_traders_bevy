@@ -1,13 +1,20 @@
-use bevy::{prelude::{EventReader, Res, Query, OrthographicProjection, With, Camera, Input, GlobalTransform, Component, MouseButton, Without}, input::mouse::{MouseWheel, MouseScrollUnit}, time::Time, window::Window, text::Text};
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::{
+        Camera, Commands, Component, EventReader, GlobalTransform, Input, MouseButton, OrthographicProjection, Query, Res, With,
+        Without,
+    },
+    text::Text,
+    time::Time,
+    transform::commands,
+    window::Window,
+};
 
 use crate::{ship::Ship, st_client::Waypoint};
-
 
 /// Used to help identify our main camera
 #[derive(Component)]
 pub(crate) struct MainCamera;
-
-
 
 #[derive(Component)]
 pub(crate) struct SelectedWaypointText;
@@ -15,6 +22,15 @@ pub(crate) struct SelectedWaypointText;
 #[derive(Component)]
 pub(crate) struct SelectedShipText;
 
+#[derive(Component, Debug)]
+pub(crate) struct SelectedShip {
+    ship: Ship,
+}
+
+#[derive(Component, Debug)]
+pub(crate) struct SelectedWaypoint {
+    waypoint: Waypoint,
+}
 
 pub(crate) fn player_camera_control(
     mut mouse_wheel_events: EventReader<MouseWheel>, time: Res<Time>, mut query: Query<&mut OrthographicProjection, With<Camera>>,
@@ -42,10 +58,10 @@ pub(crate) fn player_camera_control(
     }
 }
 
-
 pub(crate) fn mouse_click_handler(
-    buttons: Res<Input<MouseButton>>, windows: Query<&Window>, ships: Query<&Ship>, waypoints: Query<&Waypoint>,
-    mut select_ship_text: Query<&mut Text, (With<SelectedShipText>, Without<SelectedWaypointText>)>, mut select_waypoint_text: Query<&mut Text, (With<SelectedWaypointText>, Without<SelectedShipText>)>,
+    mut commands: Commands, buttons: Res<Input<MouseButton>>, windows: Query<&Window>, ships: Query<&Ship>,
+    waypoints: Query<&Waypoint>, mut select_ship_text: Query<&mut Text, (With<SelectedShipText>, Without<SelectedWaypointText>)>,
+    mut select_waypoint_text: Query<&mut Text, (With<SelectedWaypointText>, Without<SelectedShipText>)>,
     camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
     if buttons.just_released(MouseButton::Left) {
@@ -57,8 +73,15 @@ pub(crate) fn mouse_click_handler(
         {
             if let Some(found_ship) = ships.iter().find(|ship| ship.in_bounds(world_position.x, world_position.y)) {
                 select_ship_text.single_mut().sections[0].value = format!("Selected Ship: {}", found_ship.symbol,);
-            } else if let Some(found_waypoint) = waypoints.iter().find(|waypoint| waypoint.in_bounds(world_position.x, world_position.y)) {
-                select_waypoint_text.single_mut().sections[0].value = format!("Selected Waypoint: {} - {}", found_waypoint.symbol, found_waypoint.get_traits());
+                commands.spawn(SelectedShip {
+                    ship: found_ship.clone(),
+                });
+            } else if let Some(found_waypoint) =
+                waypoints.iter().find(|waypoint| waypoint.in_bounds(world_position.x, world_position.y))
+            {
+                select_waypoint_text.single_mut().sections[0].value =
+                    format!("Selected Waypoint: {} - {}", found_waypoint.symbol, found_waypoint.get_traits());
+                commands.spawn(SelectedWaypoint { waypoint: found_waypoint.clone()});
             } else {
                 select_ship_text.single_mut().sections[0].value = "Selected Ship: ".to_string();
                 select_waypoint_text.single_mut().sections[0].value = "Selected Waypoint: ".to_string();

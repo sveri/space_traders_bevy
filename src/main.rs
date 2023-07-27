@@ -94,7 +94,7 @@ fn move_button_system(
         (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
         (Changed<Interaction>, With<Button>),
     >,
-    mut text_query: Query<&mut Text>,
+    mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>, selected_waypoint: Query<&controls::SelectedWaypoint>
 ) {
     for (interaction, mut color, mut border_color, children) in &mut interaction_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
@@ -103,7 +103,8 @@ fn move_button_system(
                 text.sections[0].value = "Press".to_string();
                 // *color = PRESSED_BUTTON.into();
                 border_color.0 = Color::RED;
-                dbg!("pressed");
+                dbg!(&selected_ship.get_single());
+                dbg!(&selected_waypoint.get_single());
             }
             Interaction::Hovered => {
                 // text.sections[0].value = "Hover".to_string();

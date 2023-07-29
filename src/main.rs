@@ -51,7 +51,7 @@ struct MoveButton;
 #[derive(Component)]
 struct OrbitButton;
 
-fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_move_button(mut commands: Commands) {
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -144,7 +144,7 @@ fn move_button_system(
     mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
     selected_waypoint: Query<&controls::SelectedWaypoint>,
 ) {
-    for (interaction, mut color, mut border_color, children) in &mut move_query {
+    for (interaction, mut _color, mut border_color, children) in &mut move_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
         if *interaction == Interaction::Pressed {
             text.sections[0].value = "Press".to_string();

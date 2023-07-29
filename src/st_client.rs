@@ -3,7 +3,7 @@ use std::env;
 use bevy::{app::AppLabel, prelude::Component};
 use reqwest::blocking::{RequestBuilder, Response};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::util::Point;
 
@@ -67,6 +67,12 @@ impl Waypoint {
     }
 }
 
+#[derive(Serialize, Debug)]
+struct Navigate {
+    #[serde(rename(serialize = "waypointSymbol"))]
+    waypoint_symbol: String    
+}
+
 pub fn fetch_agent_details() -> AgentDetails {
     let resp = send_get("https://api.spacetraders.io/v2/my/agent");
     let agent_details: GenericResponse<AgentDetails> = serde_json::from_str(&resp).unwrap();
@@ -79,6 +85,21 @@ pub fn fetch_waypoints(system_symbol: &str) -> Waypoints {
     response.data
 }
 
+pub fn orbit_ship(ship_symbol: &str) -> String {
+    let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship_symbol).as_str(), "".to_string());
+    resp
+}
+
+pub fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
+    let navigate = Navigate {
+        waypoint_symbol: target_waypoint
+    };
+    dbg!(serde_json::to_string(&navigate).unwrap());
+    let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship_symbol).as_str(), serde_json::to_string(&navigate).unwrap());
+    resp
+}
+
+
 pub(crate) fn send_get(url: &str) -> String {
     let client = reqwest::blocking::Client::new();
     match send_with_header(client.get(url)) {
@@ -87,8 +108,17 @@ pub(crate) fn send_get(url: &str) -> String {
     }
 }
 
+pub(crate) fn send_post(url: &str, body: String) -> String {
+    let client = reqwest::blocking::Client::new();
+    match send_with_header(client.post(url).body(body)) {
+        Ok(resp) => resp.text().unwrap(),
+        Err(err) => panic!("Error: {}", err),
+    }
+}
+
+
 fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
-    req.header("Authorization", format!("Bearer {}", get_api_key())).send()
+    req.header("Authorization", format!("Bearer {}", get_api_key())).header("Content-Type", "application/json").send()
 }
 
 fn get_api_key() -> String { env::var("SPACE_TRADERS_API_KEY").unwrap() }

@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}};
 
 // use crate::ui;
 
@@ -64,24 +64,27 @@ fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .with_children(|parent| {
             parent
-                .spawn((ButtonBundle {
-                    style: Style {
-                        width: Val::Px(200.0),
-                        height: Val::Px(20.0),
-                        border: UiRect::all(Val::Px(5.0)),
-                        // horizontally center child text
-                        justify_content: JustifyContent::Center,
-                        // vertically center child text
-                        align_items: AlignItems::Center,
-                        position_type: PositionType::Absolute,
-                        top: Val::Px(40.0),
-                        left: Val::Px(600.0),
+                .spawn((
+                    ButtonBundle {
+                        style: Style {
+                            width: Val::Px(200.0),
+                            height: Val::Px(20.0),
+                            border: UiRect::all(Val::Px(5.0)),
+                            // horizontally center child text
+                            justify_content: JustifyContent::Center,
+                            // vertically center child text
+                            align_items: AlignItems::Center,
+                            position_type: PositionType::Absolute,
+                            top: Val::Px(40.0),
+                            left: Val::Px(600.0),
+                            ..default()
+                        },
+                        border_color: BorderColor(Color::BLACK),
+                        background_color: NORMAL_BUTTON.into(),
                         ..default()
                     },
-                    border_color: BorderColor(Color::BLACK),
-                    background_color: NORMAL_BUTTON.into(),
-                    ..default()
-                }, MoveButton))
+                    MoveButton,
+                ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Move Ship",
@@ -92,26 +95,30 @@ fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ));
                 });
-        }).with_children(|parent| {
+        })
+        .with_children(|parent| {
             parent
-                .spawn((ButtonBundle {
-                    style: Style {
-                        width: Val::Px(100.0),
-                        height: Val::Px(20.0),
-                        border: UiRect::all(Val::Px(5.0)),
-                        // horizontally center child text
-                        justify_content: JustifyContent::Center,
-                        // vertically center child text
-                        align_items: AlignItems::Center,
-                        position_type: PositionType::Absolute,
-                        top: Val::Px(40.0),
-                        left: Val::Px(400.0),
+                .spawn((
+                    ButtonBundle {
+                        style: Style {
+                            width: Val::Px(100.0),
+                            height: Val::Px(20.0),
+                            border: UiRect::all(Val::Px(5.0)),
+                            // horizontally center child text
+                            justify_content: JustifyContent::Center,
+                            // vertically center child text
+                            align_items: AlignItems::Center,
+                            position_type: PositionType::Absolute,
+                            top: Val::Px(40.0),
+                            left: Val::Px(400.0),
+                            ..default()
+                        },
+                        border_color: BorderColor(Color::BLACK),
+                        background_color: NORMAL_BUTTON.into(),
                         ..default()
                     },
-                    border_color: BorderColor(Color::BLACK),
-                    background_color: NORMAL_BUTTON.into(),
-                    ..default()
-                }, OrbitButton))
+                    OrbitButton,
+                ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Orbit",
@@ -126,21 +133,41 @@ fn setup_move_button(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn move_button_system(
-    mut interaction_query: Query<
+    mut move_query: Query<
         (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-        (Changed<Interaction>, With<Button>, With<MoveButton>),
+        (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
     >,
-    mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>, selected_waypoint: Query<&controls::SelectedWaypoint>
+    mut orbit_query: Query<
+        (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
+        (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
+    >,
+    mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
+    selected_waypoint: Query<&controls::SelectedWaypoint>,
 ) {
-    for (interaction, mut color, mut border_color, children) in &mut interaction_query {
+    for (interaction, mut color, mut border_color, children) in &mut move_query {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        if *interaction == Interaction::Pressed {
+            text.sections[0].value = "Press".to_string();
+            // *color = PRESSED_BUTTON.into();
+            border_color.0 = Color::RED;
+            dbg!(selected_waypoint.get_single().unwrap());
+            let res = st_client::move_ship(
+                selected_ship.get_single().unwrap().ship.symbol.as_str(),
+                selected_waypoint.get_single().unwrap().waypoint.symbol.to_string(),
+            );
+            dbg!(res);
+        }
+    }
+
+    for (interaction, mut color, mut border_color, children) in &mut orbit_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
         match *interaction {
             Interaction::Pressed => {
-                text.sections[0].value = "Press".to_string();
+                text.sections[0].value = "Orbiting".to_string();
                 // *color = PRESSED_BUTTON.into();
                 border_color.0 = Color::RED;
-                dbg!(&selected_ship.get_single());
-                dbg!(&selected_waypoint.get_single());
+                let res = st_client::orbit_ship(selected_ship.get_single().unwrap().ship.symbol.as_str());
+                dbg!(res);
             }
             Interaction::Hovered => {
                 // text.sections[0].value = "Hover".to_string();
@@ -190,7 +217,11 @@ impl Plugin for MainPlugin {
 fn main() -> Result<(), Box<dyn Error>> {
     dotenvy::dotenv()?;
 
-    App::new().add_plugins((DefaultPlugins, MainPlugin)).run();
+    App::new().add_plugins((DefaultPlugins, MainPlugin))
+    .add_plugins(bevy_framepace::FramepacePlugin)
+    // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))
+    .  run();
+    // App::new().add_plugins((DefaultPlugins, MainPlugin, bevy_framepace::FramepacePlugin)).run();
 
     Ok(())
 }

@@ -24,12 +24,12 @@ pub(crate) struct SelectedShipText;
 
 #[derive(Component, Debug)]
 pub(crate) struct SelectedShip {
-    ship: Ship,
+    pub(crate) ship: Ship,
 }
 
 #[derive(Component, Debug)]
 pub(crate) struct SelectedWaypoint {
-    waypoint: Waypoint,
+    pub(crate)  waypoint: Waypoint,
 }
 
 pub(crate) fn player_camera_control(

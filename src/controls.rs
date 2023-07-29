@@ -6,7 +6,6 @@ use bevy::{
     },
     text::Text,
     time::Time,
-    transform::commands,
     window::Window,
 };
 

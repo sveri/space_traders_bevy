@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use bevy::{prelude::*, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}};
+use bevy::{prelude::*};
 
 // use crate::ui;
 
@@ -159,7 +159,7 @@ fn move_button_system(
         }
     }
 
-    for (interaction, mut color, mut border_color, children) in &mut orbit_query {
+    for (interaction, _color, mut border_color, children) in &mut orbit_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
         match *interaction {
             Interaction::Pressed => {

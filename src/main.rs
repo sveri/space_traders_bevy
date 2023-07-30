@@ -133,26 +133,8 @@ fn setup_move_button(mut commands: Commands) {
 }
 
 #[derive(WorldQuery)]
-struct MyQuery<'a> {
-    interaction: &'a Interaction,
-
-    // bg_color: &'a mut BackgroundColor, 
-    // border_color: &'a mut BorderColor, 
-    children: &'a Children,
-    //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
-    // >,
-    // orbit_query: Query<
-    //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-    //     (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
-    // >,
-    // text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
-    // selected_waypoint: Query<&controls::SelectedWaypoint>,
-
-}
-
-#[derive(WorldQuery)]
 #[world_query(mutable)]
-struct MyQueryReadonly<'a> {
+struct MoveButtonQuery<'a> {
     interaction: &'a Interaction,
 
     bg_color: &'a mut BackgroundColor, 
@@ -176,7 +158,7 @@ struct MyQueryReadonly<'a> {
 // type WorldQuery<'a> = (&'a Interaction, &'a mut BackgroundColor);
 
 fn move_button_system(
-    mut move_query: Query<MyQuery>,
+    mut move_query: Query<MoveButtonQuery>,
     // mut move_query: Query<
     //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
     //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
@@ -188,13 +170,16 @@ fn move_button_system(
     mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
     selected_waypoint: Query<&controls::SelectedWaypoint>,
 ) {
-    for (interaction, mut _color, mut border_color, children) in &mut move_query {
+    for mut q in &mut move_query {
+        
+    // }
+    // for (interaction, mut _color, mut border_color, children) in &mut move_query {
         // for mut 
-        let mut text = text_query.get_mut(children[0]).unwrap();
-        if *interaction == Interaction::Pressed {
+        let mut text = text_query.get_mut(q.children[0]).unwrap();
+        if *q.interaction == Interaction::Pressed {
             text.sections[0].value = "Press".to_string();
             // *color = PRESSED_BUTTON.into();
-            border_color.0 = Color::RED;
+            q.border_color.0 = Color::RED;
             dbg!(selected_waypoint.get_single().unwrap());
             let res = st_client::move_ship(
                 selected_ship.get_single().unwrap().ship.symbol.as_str(),

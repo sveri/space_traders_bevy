@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use bevy::{prelude::*};
+use bevy::{prelude::*, ecs::query::{WorldQuery, ReadOnlyWorldQuery}};
 
 // use crate::ui;
 
@@ -132,11 +132,55 @@ fn setup_move_button(mut commands: Commands) {
         });
 }
 
+#[derive(WorldQuery)]
+struct MyQuery<'a> {
+    interaction: &'a Interaction,
+
+    // bg_color: &'a mut BackgroundColor, 
+    // border_color: &'a mut BorderColor, 
+    children: &'a Children,
+    //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
+    // >,
+    // orbit_query: Query<
+    //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
+    //     (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
+    // >,
+    // text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
+    // selected_waypoint: Query<&controls::SelectedWaypoint>,
+
+}
+
+#[derive(WorldQuery)]
+#[world_query(mutable)]
+struct MyQueryReadonly<'a> {
+    interaction: &'a Interaction,
+
+    bg_color: &'a mut BackgroundColor, 
+    border_color: &'a mut BorderColor, 
+    children: &'a Children,
+    with: With<Button>,
+    with_two: With<MoveButton>,
+    without: Without<OrbitButton>,
+    with_changed: Changed<Interaction>,
+    //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
+    // >,
+    // orbit_query: Query<
+    //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
+    //     (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
+    // >,
+    // text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
+    // selected_waypoint: Query<&controls::SelectedWaypoint>,
+
+}
+
+// type WorldQuery<'a> = (&'a Interaction, &'a mut BackgroundColor);
+
 fn move_button_system(
-    mut move_query: Query<
-        (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-        (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
-    >,
+    mut move_query: Query<MyQuery>,
+    // mut move_query: Query<
+    //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
+    //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
+    // >,
     mut orbit_query: Query<
         (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
         (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
@@ -145,6 +189,7 @@ fn move_button_system(
     selected_waypoint: Query<&controls::SelectedWaypoint>,
 ) {
     for (interaction, mut _color, mut border_color, children) in &mut move_query {
+        // for mut 
         let mut text = text_query.get_mut(children[0]).unwrap();
         if *interaction == Interaction::Pressed {
             text.sections[0].value = "Press".to_string();

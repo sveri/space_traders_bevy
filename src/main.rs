@@ -1,8 +1,8 @@
-use std::error::Error;
+use std::{error::Error, time::Duration};
 
 use bevy::{
     ecs::query::{ReadOnlyWorldQuery, WorldQuery},
-    prelude::*,
+    prelude::*, time::common_conditions::on_timer,
 };
 
 // use crate::ui;
@@ -211,11 +211,16 @@ impl Plugin for MainPlugin {
             .add_systems(
                 Update,
                 (
-                    ui::show_waypoints,
-                    ui::show_ships,
                     controls::player_camera_control,
                     controls::mouse_click_handler,
                     move_button_system,
+                ),
+            )
+            .add_systems(
+                Update,
+                (
+                    ui::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
+                    ui::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
                 ),
             );
     }

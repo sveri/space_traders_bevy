@@ -1,6 +1,9 @@
 use std::error::Error;
 
-use bevy::{prelude::*, ecs::query::{WorldQuery, ReadOnlyWorldQuery}};
+use bevy::{
+    ecs::query::{ReadOnlyWorldQuery, WorldQuery},
+    prelude::*,
+};
 
 // use crate::ui;
 
@@ -136,49 +139,36 @@ fn setup_move_button(mut commands: Commands) {
 #[world_query(mutable)]
 struct MoveButtonQuery<'a> {
     interaction: &'a Interaction,
-
-    bg_color: &'a mut BackgroundColor, 
-    border_color: &'a mut BorderColor, 
+    bg_color: &'a mut BackgroundColor,
+    border_color: &'a mut BorderColor,
     children: &'a Children,
     with: With<Button>,
     with_two: With<MoveButton>,
     without: Without<OrbitButton>,
     with_changed: Changed<Interaction>,
-    //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
-    // >,
-    // orbit_query: Query<
-    //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-    //     (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
-    // >,
-    // text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
-    // selected_waypoint: Query<&controls::SelectedWaypoint>,
-
 }
 
-// type WorldQuery<'a> = (&'a Interaction, &'a mut BackgroundColor);
+#[derive(WorldQuery)]
+#[world_query(mutable)]
+struct OrbitButtonQuery<'a> {
+    interaction: &'a Interaction,
+    bg_color: &'a mut BackgroundColor,
+    border_color: &'a mut BorderColor,
+    children: &'a Children,
+    with: With<Button>,
+    with_two: With<OrbitButton>,
+    without: Without<MoveButton>,
+    with_changed: Changed<Interaction>,
+}
 
 fn move_button_system(
-    mut move_query: Query<MoveButtonQuery>,
-    // mut move_query: Query<
-    //     (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-    //     (Changed<Interaction>, With<Button>, With<MoveButton>, Without<OrbitButton>),
-    // >,
-    mut orbit_query: Query<
-        (&Interaction, &mut BackgroundColor, &mut BorderColor, &Children),
-        (Changed<Interaction>, With<Button>, With<OrbitButton>, Without<MoveButton>),
-    >,
-    mut text_query: Query<&mut Text>, selected_ship: Query<&controls::SelectedShip>,
-    selected_waypoint: Query<&controls::SelectedWaypoint>,
+    mut move_query: Query<MoveButtonQuery>, mut orbit_query: Query<OrbitButtonQuery>, mut text_query: Query<&mut Text>,
+    selected_ship: Query<&controls::SelectedShip>, selected_waypoint: Query<&controls::SelectedWaypoint>,
 ) {
     for mut q in &mut move_query {
-        
-    // }
-    // for (interaction, mut _color, mut border_color, children) in &mut move_query {
-        // for mut 
         let mut text = text_query.get_mut(q.children[0]).unwrap();
         if *q.interaction == Interaction::Pressed {
             text.sections[0].value = "Press".to_string();
-            // *color = PRESSED_BUTTON.into();
             q.border_color.0 = Color::RED;
             dbg!(selected_waypoint.get_single().unwrap());
             let res = st_client::move_ship(
@@ -189,26 +179,13 @@ fn move_button_system(
         }
     }
 
-    for (interaction, _color, mut border_color, children) in &mut orbit_query {
-        let mut text = text_query.get_mut(children[0]).unwrap();
-        match *interaction {
-            Interaction::Pressed => {
-                text.sections[0].value = "Orbiting".to_string();
-                // *color = PRESSED_BUTTON.into();
-                border_color.0 = Color::RED;
-                let res = st_client::orbit_ship(selected_ship.get_single().unwrap().ship.symbol.as_str());
-                dbg!(res);
-            }
-            Interaction::Hovered => {
-                // text.sections[0].value = "Hover".to_string();
-                // *color = HOVERED_BUTTON.into();
-                // border_color.0 = Color::WHITE;
-            }
-            Interaction::None => {
-                // text.sections[0].value = "Button".to_string();
-                // *color = NORMAL_BUTTON.into();
-                // border_color.0 = Color::BLACK;
-            }
+    for mut q in &mut orbit_query {
+        let mut text = text_query.get_mut(q.children[0]).unwrap();
+        if *q.interaction == Interaction::Pressed {
+            text.sections[0].value = "Orbiting".to_string();
+            q.border_color.0 = Color::RED;
+            let res = st_client::orbit_ship(selected_ship.get_single().unwrap().ship.symbol.as_str());
+            dbg!(res);
         }
     }
 }
@@ -247,10 +224,11 @@ impl Plugin for MainPlugin {
 fn main() -> Result<(), Box<dyn Error>> {
     dotenvy::dotenv()?;
 
-    App::new().add_plugins((DefaultPlugins, MainPlugin))
-    .add_plugins(bevy_framepace::FramepacePlugin)
-    // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))
-    .  run();
+    App::new()
+        .add_plugins((DefaultPlugins, MainPlugin))
+        .add_plugins(bevy_framepace::FramepacePlugin)
+        // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))
+        .run();
     // App::new().add_plugins((DefaultPlugins, MainPlugin, bevy_framepace::FramepacePlugin)).run();
 
     Ok(())

@@ -218,14 +218,15 @@ impl Plugin for MainPlugin {
                     move_button_system,
                     // hud::HUDPlugin
                 ),
-            )
-            .add_systems(
-                Update,
-                (
-                    ui_old::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
-                    ui_old::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
-                ),
             );
+            // .add_systems(
+            //     Update,
+            //     (
+            //         ui_old::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
+            //         ui_old::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
+            //     ),
+            // )
+            // ;
     }
 }
 

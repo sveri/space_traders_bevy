@@ -8,10 +8,10 @@ pub(crate) struct PlanetUpdateTimer(pub Timer);
 pub(crate) struct ShipUpdateTimer(pub Timer);
 
 #[derive(Component)]
-struct ShipRepresentation;
+pub struct ShipRepresentation;
 
 #[derive(Component)]
-struct WaypointRepresentation;
+pub struct WaypointRepresentation;
 
 #[derive(Component)]
 pub struct AgentDetailsText;

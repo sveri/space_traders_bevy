@@ -208,9 +208,6 @@ impl Plugin for MainPlugin {
                     setup_move_button,
                     add_ships,
                     add_waypoints,
-                    // ui_old::get_agent_details,
-                    // ui_old::selected_ship_text,
-                    // ui_old::selected_waypoint_text,
                 ),
             )
             .add_systems(

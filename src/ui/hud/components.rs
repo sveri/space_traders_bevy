@@ -14,4 +14,8 @@ struct ShipRepresentation;
 struct WaypointRepresentation;
 
 #[derive(Component)]
-struct AgentDetailsText;
+pub struct AgentDetailsText;
+
+#[derive(Component)]
+pub(crate) struct SelectedShipText;
+

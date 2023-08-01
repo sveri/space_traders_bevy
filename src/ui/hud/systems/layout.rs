@@ -1,9 +1,8 @@
 use bevy::{prelude::*, text::TextStyle};
 
 use crate::{st_client, controls};
+use crate::ui::hud::components::*;
 
-#[derive(Component)]
-struct AgentDetailsText;
 
 pub(crate) fn get_agent_details(mut commands: Commands) {
     let agent_details = st_client::fetch_agent_details();
@@ -51,7 +50,7 @@ pub(crate) fn selected_ship_text(mut commands: Commands) {
             left: Val::Px(0.0),
             ..default()
         }),
-        controls::SelectedShipText,
+        SelectedShipText,
     ));
 }
 

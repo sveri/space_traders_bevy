@@ -1,4 +1,4 @@
-mod hud;
+pub mod hud;
 
 
 use bevy::prelude::*;

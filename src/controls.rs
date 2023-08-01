@@ -9,7 +9,7 @@ use bevy::{
     window::Window,
 };
 
-use crate::{ship::Ship, st_client::Waypoint};
+use crate::{ship::Ship, st_client::Waypoint, ui::hud::components::*};
 
 /// Used to help identify our main camera
 #[derive(Component)]
@@ -17,9 +17,6 @@ pub(crate) struct MainCamera;
 
 #[derive(Component)]
 pub(crate) struct SelectedWaypointText;
-
-#[derive(Component)]
-pub(crate) struct SelectedShipText;
 
 #[derive(Component, Debug)]
 pub(crate) struct SelectedShip {

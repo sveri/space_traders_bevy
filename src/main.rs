@@ -13,6 +13,8 @@ mod st_client;
 mod ui;
 mod util;
 
+mod hud;
+
 #[derive(Component)]
 struct Person;
 
@@ -70,7 +72,7 @@ fn setup_move_button(mut commands: Commands) {
                 .spawn((
                     ButtonBundle {
                         style: Style {
-                            width: Val::Px(200.0),
+                            width: Val::Px(180.0),
                             height: Val::Px(20.0),
                             border: UiRect::all(Val::Px(5.0)),
                             // horizontally center child text
@@ -79,7 +81,7 @@ fn setup_move_button(mut commands: Commands) {
                             align_items: AlignItems::Center,
                             position_type: PositionType::Absolute,
                             top: Val::Px(40.0),
-                            left: Val::Px(600.0),
+                            right: Val::Px(20.0),
                             ..default()
                         },
                         border_color: BorderColor(Color::BLACK),
@@ -112,8 +114,8 @@ fn setup_move_button(mut commands: Commands) {
                             // vertically center child text
                             align_items: AlignItems::Center,
                             position_type: PositionType::Absolute,
-                            top: Val::Px(40.0),
-                            left: Val::Px(400.0),
+                            top: Val::Px(10.0),
+                            right: Val::Px(20.0),
                             ..default()
                         },
                         border_color: BorderColor(Color::BLACK),
@@ -214,6 +216,7 @@ impl Plugin for MainPlugin {
                     controls::player_camera_control,
                     controls::mouse_click_handler,
                     move_button_system,
+                    // hud::HUDPlugin
                 ),
             )
             .add_systems(
@@ -222,7 +225,7 @@ impl Plugin for MainPlugin {
                     ui::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
                     ui::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
                 ),
-            );
+            ).add_plugins(hud::HUDPlugin);
     }
 }
 

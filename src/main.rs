@@ -10,6 +10,7 @@ use bevy::{
 mod controls;
 mod ship;
 mod st_client;
+mod ui_old;
 mod ui;
 mod util;
 
@@ -196,8 +197,10 @@ pub struct MainPlugin;
 
 impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ui::PlanetUpdateTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-            .insert_resource(ui::ShipUpdateTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
+        app.insert_resource(ui_old::PlanetUpdateTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
+            .insert_resource(ui_old::ShipUpdateTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
+            // .add_plugins(hud::HUDPlugin)
+            .add_plugins(ui::UiPlugin)
             .add_systems(
                 Startup,
                 (
@@ -205,9 +208,9 @@ impl Plugin for MainPlugin {
                     setup_move_button,
                     add_ships,
                     add_waypoints,
-                    ui::get_agent_details,
-                    ui::selected_ship_text,
-                    ui::selected_waypoint_text,
+                    // ui_old::get_agent_details,
+                    // ui_old::selected_ship_text,
+                    // ui_old::selected_waypoint_text,
                 ),
             )
             .add_systems(
@@ -222,10 +225,10 @@ impl Plugin for MainPlugin {
             .add_systems(
                 Update,
                 (
-                    ui::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
-                    ui::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
+                    ui_old::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
+                    ui_old::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
                 ),
-            ).add_plugins(hud::HUDPlugin);
+            );
     }
 }
 

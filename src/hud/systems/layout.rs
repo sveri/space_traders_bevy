@@ -8,7 +8,7 @@ use crate::hud::styles::*;
 // }
 
 // pub fn build_hud(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
-pub fn build_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub(crate) fn build_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
     // let hud_entity = commands
     commands
         .spawn((

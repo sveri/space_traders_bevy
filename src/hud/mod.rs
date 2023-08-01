@@ -16,7 +16,7 @@ use crate::ship::Ship;
 // }
 
 
-pub struct HUDPlugin;
+pub(crate) struct HUDPlugin;
 
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {

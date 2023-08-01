@@ -1,8 +1,8 @@
-use std::{error::Error, time::Duration};
+use std::{error::Error};
 
 use bevy::{
-    ecs::query::{ReadOnlyWorldQuery, WorldQuery},
-    prelude::*, time::common_conditions::on_timer,
+    ecs::query::{WorldQuery},
+    prelude::*,
 };
 
 // use crate::ui;
@@ -10,7 +10,6 @@ use bevy::{
 mod controls;
 mod ship;
 mod st_client;
-mod ui_old;
 mod ui;
 mod util;
 
@@ -193,40 +192,20 @@ fn move_button_system(
     }
 }
 
-pub struct MainPlugin;
+struct MainPlugin;
 
 impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ui_old::PlanetUpdateTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-            .insert_resource(ui_old::ShipUpdateTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
-            // .add_plugins(hud::HUDPlugin)
-            .add_plugins(ui::UiPlugin)
-            .add_systems(
-                Startup,
-                (
-                    setup,
-                    setup_move_button,
-                    add_ships,
-                    add_waypoints,
-                ),
-            )
+        app.add_plugins(ui::UiPlugin)
+            .add_systems(Startup, (setup, setup_move_button, add_ships, add_waypoints))
             .add_systems(
                 Update,
                 (
                     controls::player_camera_control,
                     controls::mouse_click_handler,
                     move_button_system,
-                    // hud::HUDPlugin
                 ),
             );
-            // .add_systems(
-            //     Update,
-            //     (
-            //         ui_old::show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))),
-            //         ui_old::show_ships.run_if(on_timer(Duration::from_secs_f64(1.0))),
-            //     ),
-            // )
-            // ;
     }
 }
 

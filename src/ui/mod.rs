@@ -1,9 +1,9 @@
-pub mod hud;
+pub(crate) mod hud;
 
 
 use bevy::prelude::*;
 
-pub struct UiPlugin;
+pub(crate) struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {

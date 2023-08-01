@@ -1,5 +1,5 @@
-pub mod components;
-pub mod systems;
+pub(crate) mod components;
+pub(crate) mod systems;
 
 use std::time::Duration;
 
@@ -9,7 +9,7 @@ use bevy::time::common_conditions::on_timer;
 use systems::layout::*;
 use systems::update::*;
 
-pub struct HudPlugin;
+pub(crate) struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {

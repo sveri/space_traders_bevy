@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-pub const BACKGROUND_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.5);
+pub(crate) const BACKGROUND_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.5);
 
-pub const HUD_STYLE: Style = {
+pub(crate) const HUD_STYLE: Style = {
     let mut style = Style::DEFAULT;
     style.display = Display::Flex;
     style.flex_direction = FlexDirection::Row;
@@ -11,7 +11,7 @@ pub const HUD_STYLE: Style = {
     style
 };
 
-pub const LHS_STYLE: Style = {
+pub(crate) const LHS_STYLE: Style = {
     let mut style = Style::DEFAULT;
     style.display = Display::Flex;
     style.flex_direction = FlexDirection::Row;
@@ -22,7 +22,7 @@ pub const LHS_STYLE: Style = {
     style
 };
 
-pub const RHS_STYLE: Style = {
+pub(crate) const RHS_STYLE: Style = {
     let mut style = Style::DEFAULT;
     style.display = Display::Flex;
     style.flex_direction = FlexDirection::Row;
@@ -33,14 +33,14 @@ pub const RHS_STYLE: Style = {
     style
 };
 
-pub const IMAGE_STYLE: Style = {
+pub(crate) const IMAGE_STYLE: Style = {
     let mut style = Style::DEFAULT;
     // size = Size::new(Val::Px(48.0), Val::Px(48.0)),
     style.margin = UiRect::new(Val::Px(8.0), Val::Px(8.0), Val::Px(8.0), Val::Px(8.0));
     style
 };
 
-pub fn get_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+pub(crate) fn get_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
     TextStyle {
         font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 64.0,

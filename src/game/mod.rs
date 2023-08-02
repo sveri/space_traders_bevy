@@ -3,7 +3,7 @@ pub(super) mod waypoint;
 
 
 
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 use self::ship::ShipPlugin;
 

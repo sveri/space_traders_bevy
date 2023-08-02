@@ -5,7 +5,7 @@ mod util;
 
 use std::error::Error;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, winit::WinitSettings};
 
 #[derive(Component)]
 struct Person;
@@ -29,6 +29,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     dotenvy::dotenv()?;
 
     App::new()
+        // .insert_resource(WinitSettings::desktop_app())
+        
         .add_plugins((DefaultPlugins, MainPlugin))
         .add_plugins(bevy_framepace::FramepacePlugin)
         // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))

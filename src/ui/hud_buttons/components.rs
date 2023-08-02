@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub(super) struct MoveButton;
+pub struct MoveButton;
 
 #[derive(Component)]
-pub(super) struct OrbitButton;
+// pub(super) struct OrbitButton;
+pub struct OrbitButton;

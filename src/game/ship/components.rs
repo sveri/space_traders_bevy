@@ -3,6 +3,7 @@ use serde::Deserialize;
 
 use crate::util::Point;
 
+
 pub(crate) type Ships = Vec<Ship>;
 
 #[derive(Debug, Deserialize, Component, Clone)]

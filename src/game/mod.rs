@@ -2,10 +2,13 @@ pub(super) mod ship;
 
 use bevy::prelude::*;
 
+use self::ship::ShipPlugin;
+
 pub(crate) struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(ShipPlugin);
         // app.add_systems(Startup, (get_agent_details, selected_ship_text, selected_waypoint_text)).add_systems(
         //     Update,
         //     (

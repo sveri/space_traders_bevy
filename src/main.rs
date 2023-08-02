@@ -17,17 +17,7 @@ struct Person;
 struct Name(String);
 
 #[derive(Component)]
-struct ShipComponent;
-
-#[derive(Component)]
 struct WaypointComponent;
-
-fn add_ships(mut commands: Commands) {
-    let ships = ship::client::fetch_my_ships();
-    ships.iter().for_each(|s| {
-        commands.spawn((s.to_owned(), ShipComponent));
-    })
-}
 
 fn add_waypoints(mut commands: Commands) {
     let agent_details = st_client::fetch_agent_details();
@@ -47,8 +37,9 @@ struct MainPlugin;
 
 impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(ui::UiPlugin)
-            .add_systems(Startup, (setup, add_ships, add_waypoints));
+        app.add_plugins((game::GamePlugin, ui::UiPlugin))
+
+            .add_systems(Startup, (setup, add_waypoints));
     }
 }
 

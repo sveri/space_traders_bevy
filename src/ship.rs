@@ -1,5 +1,7 @@
+#![allow(dead_code)]
+
 use crate::{st_client, util::Point};
-use bevy::{prelude::Component};
+use bevy::prelude::Component;
 use serde::Deserialize;
 pub(crate) type Ships = Vec<Ship>;
 

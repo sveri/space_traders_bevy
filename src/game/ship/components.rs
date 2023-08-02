@@ -6,6 +6,9 @@ use serde::Deserialize;
 use crate::util::Point;
 
 
+#[derive(Component)]
+pub(crate) struct ShipRepresentation;
+
 
 #[derive(Component)]
 pub(super) struct ShipComponent;

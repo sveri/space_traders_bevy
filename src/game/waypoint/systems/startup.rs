@@ -1,13 +1,11 @@
 use bevy::prelude::*;
 
-use crate::st_client;
-
-use super::components::WaypointComponent;
+use crate::{st_client, game::waypoint::components::WaypointComponent};
 
 
 
 
-pub(super) fn add_waypoints(mut commands: Commands) {
+pub(crate) fn add_waypoints(mut commands: Commands) {
     let agent_details = st_client::fetch_agent_details();
     let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
     waypoints.iter().for_each(|w| {

@@ -12,6 +12,6 @@ pub(crate) struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (get_agent_details, selected_ship_text, selected_waypoint_text));
+        app.add_systems(Startup, (show_agent_details, selected_ship_text, selected_waypoint_text, show_error_text));
     }
 }

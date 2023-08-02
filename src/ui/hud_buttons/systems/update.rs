@@ -10,27 +10,14 @@ use crate::{
 
 #[derive(WorldQuery)]
 #[world_query(mutable)]
-pub(crate) struct MoveButtonQuery<'a> {
-    interaction: &'a Interaction,
-    bg_color: &'a mut BackgroundColor,
-    border_color: &'a mut BorderColor,
-    children: &'a Children,
-    with: With<Button>,
-    with_two: With<MoveButton>,
-    without: Without<OrbitButton>,
-    with_changed: Changed<Interaction>,
-}
-
-#[derive(WorldQuery)]
-#[world_query(mutable)]
 pub(crate) struct OrbitButtonQuery<'a> {
     interaction: &'a Interaction,
-    bg_color: &'a mut BackgroundColor,
+    // bg_color: &'a mut BackgroundColor,
     border_color: &'a mut BorderColor,
     children: &'a Children,
     with: With<Button>,
     with_two: With<OrbitButton>,
-    without: Without<MoveButton>,
+    // without: Without<MoveButton>,
     with_changed: Changed<Interaction>,
 }
 
@@ -42,10 +29,29 @@ pub(crate) fn orbit_clicked(
         if *q.interaction == Interaction::Pressed {
             text.sections[0].value = "Orbiting".to_string();
             q.border_color.0 = Color::RED;
-            let res = st_client::orbit_ship(selected_ship.get_single().unwrap().ship.symbol.as_str());
-            dbg!(res);
+            if let Ok(selected_ship) = selected_ship.get_single() {
+                dbg!("found");
+            } else {
+                dbg!("error");
+            }
+            // let res = st_client::orbit_ship(selected_ship.get_single().unwrap().ship.symbol.as_str());
+            // dbg!(res);
         }
     }
+}
+
+
+#[derive(WorldQuery)]
+#[world_query(mutable)]
+pub(crate) struct MoveButtonQuery<'a> {
+    interaction: &'a Interaction,
+    bg_color: &'a mut BackgroundColor,
+    border_color: &'a mut BorderColor,
+    children: &'a Children,
+    with: With<Button>,
+    with_two: With<MoveButton>,
+    without: Without<OrbitButton>,
+    with_changed: Changed<Interaction>,
 }
 pub(crate) fn move_ship_clicked(
     mut move_query: Query<MoveButtonQuery>, mut text_query: Query<&mut Text>, selected_ship: Query<&SelectedShip>,

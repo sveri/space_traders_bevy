@@ -5,7 +5,7 @@ use crate::st_client;
 use crate::ui::hud::components::*;
 
 
-pub(crate) fn get_agent_details(mut commands: Commands) {
+pub(crate) fn show_agent_details(mut commands: Commands) {
     let agent_details = st_client::fetch_agent_details();
 
     commands.spawn((
@@ -74,4 +74,24 @@ pub(crate) fn selected_waypoint_text(mut commands: Commands) {
         }),
         SelectedWaypointText,
     ));
+}
+
+pub(crate) fn show_error_text(mut commands: Commands){
+    commands.spawn((
+        TextBundle::from_section(
+            "Error: ",
+            TextStyle {
+                font_size: 17.0,
+                color: Color::RED,
+                ..default()
+            },
+        )
+        .with_text_alignment(TextAlignment::Center)
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        }),
+        ErrorText));
 }

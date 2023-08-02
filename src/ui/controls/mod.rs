@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-struct ControlsPlugin;
+pub(super) struct ControlsPlugin;
 
 impl Plugin for ControlsPlugin {
     fn build(&self, app: &mut App) {

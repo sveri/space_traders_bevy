@@ -1,10 +1,10 @@
-pub(crate) mod hud;
-pub(crate) mod hud_buttons;
+pub(super) mod hud;
+pub(super) mod hud_buttons;
 mod controls;
 
 use bevy::prelude::*;
 
-pub(crate) struct UiPlugin;
+pub(super) struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {

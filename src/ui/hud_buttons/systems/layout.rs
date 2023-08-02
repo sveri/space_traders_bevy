@@ -4,7 +4,7 @@ use crate::ui::hud_buttons::components::*;
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 
-pub(crate) fn setup_buttons(mut commands: Commands) {
+pub(in crate::ui::hud_buttons) fn setup_buttons(mut commands: Commands) {
     commands
         .spawn(NodeBundle {
             style: Style {

@@ -1,11 +1,13 @@
 use std::error::Error;
 
-use bevy::{ prelude::*};
+use bevy::prelude::*;
+use game::ship;
 
-mod ship;
+// mod ship;
 mod st_client;
 mod ui;
 mod util;
+mod game;
 
 
 #[derive(Component)]
@@ -21,7 +23,7 @@ struct ShipComponent;
 struct WaypointComponent;
 
 fn add_ships(mut commands: Commands) {
-    let ships = ship::fetch_my_ships();
+    let ships = ship::client::fetch_my_ships();
     ships.iter().for_each(|s| {
         commands.spawn((s.to_owned(), ShipComponent));
     })
@@ -58,7 +60,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .add_plugins(bevy_framepace::FramepacePlugin)
         // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))
         .run();
-    // App::new().add_plugins((DefaultPlugins, MainPlugin, bevy_framepace::FramepacePlugin)).run();
 
     Ok(())
 }

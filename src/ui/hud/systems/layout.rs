@@ -1,7 +1,7 @@
 use bevy::{prelude::*, text::TextStyle};
 
 use crate::ui::controls::components::SelectedWaypointText;
-use crate::{st_client};
+use crate::st_client;
 use crate::ui::hud::components::*;
 
 

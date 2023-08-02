@@ -1,9 +1,9 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
-use crate::{ui::hud::components::*, st_client::Waypoint, ship::Ship};
+use crate::{ui::hud::components::*, st_client::Waypoint};
 
 
-pub(crate) fn show_ships(mut commands: Commands, ships: Query<&Ship>) {
+pub(crate) fn show_ships(mut commands: Commands, ships: Query<&crate::game::ship::components::Ship>) {
     for ship in ships.iter() {
         commands.spawn((
             SpriteBundle {

@@ -1,6 +1,7 @@
 use std::env;
 
-use bevy::{app::AppLabel, prelude::Component};
+use bevy::prelude::Component;
+use bevy::app::AppLabel;
 use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::{Deserialize, Serialize};

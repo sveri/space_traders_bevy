@@ -1,6 +1,6 @@
 use bevy::{prelude::*, input::mouse::{MouseWheel, MouseScrollUnit}};
 
-use crate::{st_client::Waypoint, ship::Ship, ui::{controls::components::*, hud::components::SelectedShipText}};
+use crate::{st_client::Waypoint, ui::{controls::components::*, hud::components::SelectedShipText}, game::ship::components::Ship};
 
 
 pub(crate) fn player_camera_control(
@@ -29,6 +29,7 @@ pub(crate) fn player_camera_control(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn mouse_click_handler(
     mut commands: Commands, buttons: Res<Input<MouseButton>>, windows: Query<&Window>, ships: Query<&Ship>,
     waypoints: Query<&Waypoint>, mut select_ship_text: Query<&mut Text, (With<SelectedShipText>, Without<SelectedWaypointText>)>,

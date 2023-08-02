@@ -1,6 +1,7 @@
 use bevy::{prelude::*, text::TextStyle};
 
-use crate::{st_client, controls};
+use crate::ui::controls::components::SelectedWaypointText;
+use crate::{st_client};
 use crate::ui::hud::components::*;
 
 
@@ -71,6 +72,6 @@ pub(crate) fn selected_waypoint_text(mut commands: Commands) {
             left: Val::Px(0.0),
             ..default()
         }),
-        controls::SelectedWaypointText,
+        SelectedWaypointText,
     ));
 }

@@ -1,32 +1,7 @@
-use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
-    prelude::{
-        Camera, Commands, Component, EventReader, GlobalTransform, Input, MouseButton, OrthographicProjection, Query, Res, With,
-        Without,
-    },
-    text::Text,
-    time::Time,
-    window::Window,
-};
+use bevy::{prelude::*, input::mouse::{MouseWheel, MouseScrollUnit}};
 
-use crate::{ship::Ship, st_client::Waypoint, ui::hud::components::*};
+use crate::{st_client::Waypoint, ship::Ship, ui::{controls::components::*, hud::components::SelectedShipText}};
 
-/// Used to help identify our main camera
-#[derive(Component)]
-pub(crate) struct MainCamera;
-
-#[derive(Component)]
-pub(crate) struct SelectedWaypointText;
-
-#[derive(Component, Debug)]
-pub(crate) struct SelectedShip {
-    pub(crate) ship: Ship,
-}
-
-#[derive(Component, Debug)]
-pub(crate) struct SelectedWaypoint {
-    pub(crate)  waypoint: Waypoint,
-}
 
 pub(crate) fn player_camera_control(
     mut mouse_wheel_events: EventReader<MouseWheel>, time: Res<Time>, mut query: Query<&mut OrthographicProjection, With<Camera>>,

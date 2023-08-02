@@ -1,6 +1,6 @@
 use bevy::{prelude::*, ecs::query::WorldQuery};
 
-use crate::{ui::hud_buttons::components::*, st_client, controls};
+use crate::{ui::{hud_buttons::components::*, controls::components::{SelectedShip, SelectedWaypoint}}, st_client};
 
 #[derive(WorldQuery)]
 #[world_query(mutable)]
@@ -30,7 +30,7 @@ pub(crate) struct OrbitButtonQuery<'a> {
 
 pub(crate) fn update_button_system(
     mut move_query: Query<MoveButtonQuery>, mut orbit_query: Query<OrbitButtonQuery>, mut text_query: Query<&mut Text>,
-    selected_ship: Query<&controls::SelectedShip>, selected_waypoint: Query<&controls::SelectedWaypoint>,
+    selected_ship: Query<&SelectedShip>, selected_waypoint: Query<&SelectedWaypoint>,
 ) {
     for mut q in &mut move_query {
         let mut text = text_query.get_mut(q.children[0]).unwrap();

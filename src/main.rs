@@ -1,16 +1,12 @@
 use std::error::Error;
 
-use bevy::{ecs::query::WorldQuery, prelude::*};
+use bevy::{ prelude::*};
 
-// use crate::ui;
-
-mod controls;
 mod ship;
 mod st_client;
 mod ui;
 mod util;
 
-// mod hud;
 
 #[derive(Component)]
 struct Person;
@@ -42,7 +38,7 @@ fn add_waypoints(mut commands: Commands) {
 fn setup(mut commands: Commands) {
     let mut bundle = Camera2dBundle::default();
     bundle.projection.scale = 0.234;
-    commands.spawn((bundle, controls::MainCamera));
+    commands.spawn((bundle, crate::ui::controls::components::MainCamera));
 }
 
 struct MainPlugin;
@@ -50,8 +46,7 @@ struct MainPlugin;
 impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(ui::UiPlugin)
-            .add_systems(Startup, (setup, add_ships, add_waypoints))
-            .add_systems(Update, (controls::player_camera_control, controls::mouse_click_handler));
+            .add_systems(Startup, (setup, add_ships, add_waypoints));
     }
 }
 

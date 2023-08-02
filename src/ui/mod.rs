@@ -1,6 +1,6 @@
 pub(super) mod hud;
 pub(super) mod hud_buttons;
-mod controls;
+pub(super) mod controls;
 
 use bevy::prelude::*;
 

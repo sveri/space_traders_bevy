@@ -5,6 +5,8 @@ pub(super) mod waypoint;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
 
+use self::ship::ShipPlugin;
+
 
 
 pub(crate) struct GamePlugin;

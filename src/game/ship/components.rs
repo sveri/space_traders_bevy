@@ -1,7 +1,14 @@
+#![allow(dead_code)]
+
 use bevy::prelude::*;
 use serde::Deserialize;
 
 use crate::util::Point;
+
+
+
+#[derive(Component)]
+pub(super) struct ShipComponent;
 
 
 pub(crate) type Ships = Vec<Ship>;

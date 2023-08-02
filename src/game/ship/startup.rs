@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
-use super::client::fetch_my_ships;
+use super::{client::fetch_my_ships, components::ShipComponent};
 
 
-
-#[derive(Component)]
-struct ShipComponent;
 
 pub(super) fn add_ships(mut commands: Commands) {
     let ships = fetch_my_ships();

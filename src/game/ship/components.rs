@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 use serde::Deserialize;
+use chrono::{DateTime, Duration, Utc};
 
 use crate::util::Point;
 
@@ -30,6 +31,15 @@ impl Ship {
     }
 
     pub(crate) fn get_position(&self) -> Point {
+        if self.nav.route.departure.symbol == self.nav.route.destination.symbol {
+            return Point {x: self.nav.route.departure.x, y: self.nav.route.departure.y };
+        } else {
+            let utc: DateTime<Utc> = Utc::now();
+            let arrival_time: DateTime<Utc> = self.nav.route.arrival.parse::<DateTime<Utc>>().unwrap();
+            if (utc - arrival_time).num_milliseconds() > 0 {
+                return Point {x: self.nav.route.destination.x, y: self.nav.route.destination.y };
+            }
+        }
         Point {x: self.nav.route.departure.x, y: self.nav.route.departure.y }
     }
 
@@ -53,16 +63,21 @@ pub(crate) struct Nav {
 pub(crate) struct Route {
     pub(crate) departure: Departure,
     pub(crate) destination: Destination,
+    pub(crate) arrival: String,
+    #[serde(alias = "departureTime")]
+    pub(crate) departure_time: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct Departure {
+    pub(crate) symbol: String,
     pub(crate) x: f32,
     pub(crate) y: f32,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct Destination {
+    pub(crate) symbol: String,
     pub(crate) x: f32,
     pub(crate) y: f32,
 }

@@ -13,6 +13,6 @@ pub(crate) struct WaypointPlugin;
 impl Plugin for WaypointPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, add_waypoints) 
-            .add_systems(Update, show_waypoints.run_if(on_timer(Duration::from_secs_f64(2.0))));
+            .add_systems(Update, show_waypoints.run_if(on_timer(Duration::from_secs_f64(0.1))));
     }
 }

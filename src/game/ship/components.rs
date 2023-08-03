@@ -31,16 +31,23 @@ impl Ship {
     }
 
     pub(crate) fn get_position(&self) -> Point {
+        // ship arrivale and destination are the same
         if self.nav.route.departure.symbol == self.nav.route.destination.symbol {
             return Point {x: self.nav.route.departure.x, y: self.nav.route.departure.y };
         } else {
             let utc: DateTime<Utc> = Utc::now();
             let arrival_time: DateTime<Utc> = self.nav.route.arrival.parse::<DateTime<Utc>>().unwrap();
+
+            // ship arrived at destination
             if (utc - arrival_time).num_milliseconds() > 0 {
                 return Point {x: self.nav.route.destination.x, y: self.nav.route.destination.y };
+            } 
+            // ship is moving from departure to destination
+            else {
+                return Point {x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2., y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2. };
+
             }
         }
-        Point {x: self.nav.route.departure.x, y: self.nav.route.departure.y }
     }
 
     pub(crate) fn in_bounds(&self, x: f32, y: f32) -> bool {
@@ -95,6 +102,12 @@ pub(crate) struct Crew {
 pub(crate) struct Fuel {
     pub(crate) current: i32,
     pub(crate) capacity: i32,
+}
+
+impl std::fmt::Display for Fuel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}/{}", self.current, self.capacity)
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]

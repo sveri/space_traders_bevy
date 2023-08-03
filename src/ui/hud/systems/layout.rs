@@ -76,10 +76,10 @@ pub(crate) fn selected_waypoint_text(mut commands: Commands) {
     ));
 }
 
-pub(crate) fn show_error_text(mut commands: Commands){
+pub(crate) fn init_error_text(mut commands: Commands){
     commands.spawn((
         TextBundle::from_section(
-            "Error: ",
+            "",
             TextStyle {
                 font_size: 17.0,
                 color: Color::RED,

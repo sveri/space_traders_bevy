@@ -17,10 +17,8 @@ pub(crate) fn add_ships(mut commands: Commands) {
                 transform: Transform::from_translation(Vec3::new(ship.get_position().x, ship.get_position().y, 0.)),
                 ..default()
             },
-            // ship.to_owned(),
-            // PbrBundle::default(),
-            PickableBundle::default(),    // <- Makes the mesh pickable.
-            RaycastPickTarget::default(), // <- Needed for the raycast backend.
+            PickableBundle::default(),
+            RaycastPickTarget::default(),
             On::<Pointer<Click>>::target_component_mut::<Ship>(|click, ship_rep| {
                 println!("{:?}", ship_rep);
             }),

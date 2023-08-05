@@ -5,8 +5,8 @@ mod util;
 
 use std::error::Error;
 
-use bevy::{prelude::*, winit::WinitSettings};
-use bevy_mod_picking::DefaultPickingPlugins;
+use bevy::{prelude::*, winit::WinitSettings, log::LogPlugin};
+use bevy_mod_picking::{DefaultPickingPlugins, prelude::RaycastPickCamera};
 
 #[derive(Component)]
 struct Person;
@@ -17,7 +17,7 @@ struct Name(String);
 fn setup_camera(mut commands: Commands) {
     let mut bundle = Camera2dBundle::default();
     bundle.projection.scale = 0.234;
-    commands.spawn((bundle, crate::ui::controls::components::MainCamera));
+    commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default(), ));
 }
 
 struct MainPlugin;
@@ -32,7 +32,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     App::new()
         // .insert_resource(WinitSettings::desktop_app())
         
-        .add_plugins((DefaultPlugins, MainPlugin))
+        .add_plugins((DefaultPlugins.set(LogPlugin {
+            filter: "warn,mygame=debug".into(),
+            level: bevy::log::Level::DEBUG,
+        }), MainPlugin))
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_plugins(DefaultPickingPlugins)
         // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))

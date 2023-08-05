@@ -8,14 +8,14 @@ pub(crate) fn show_waypoints(
     query: Query<&Waypoint>,
 ) {
     for waypoint in query.iter() {
-        commands.spawn((
-            MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(waypoint.get_display_size()).into()).into(),
-                material: materials.add(ColorMaterial::from(Color::PURPLE)),
-                transform: Transform::from_translation(Vec3::new(waypoint.x, waypoint.y, 0.)),
-                ..default()
-            },
-            WaypointRepresentation,
-        ));
+        // commands.spawn((
+        //     MaterialMesh2dBundle {
+        //         mesh: meshes.add(shape::Circle::new(waypoint.get_display_size()).into()).into(),
+        //         material: materials.add(ColorMaterial::from(Color::PURPLE)),
+        //         transform: Transform::from_translation(Vec3::new(waypoint.x, waypoint.y, 0.)),
+        //         ..default()
+        //     },
+        //     WaypointRepresentation,
+        // ));
     }
 }

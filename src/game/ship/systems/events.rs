@@ -16,60 +16,28 @@ use crate::game::ship::components::Ship;
 
 
 
+
+// finally was able to use events with bevy 0.11 and patched bevy_mod_picking|_events
+// see here for an example: https://github.com/chriamue/flyconomy/blob/53d5b1d91aa39b6b97ff348f22ec35e0f1152a1f/src/game/aerodrome.rs#L33
 #[derive(Event, Component, Debug)]
 pub(crate) struct ShipSelected(Entity);
-// pub(crate) struct ShipSelected(Ship);
 
 impl From<ListenerInput<Pointer<Click>>> for ShipSelected {
     fn from(click_event: ListenerInput<Pointer<Click>>) -> Self {
-        // dbg!(click_event.target.);
         Self(click_event.target)
-        // ShipSelected()
     }
 }
 
-// impl From<ListenerInput<bevy_mod_picking::prelude::Pointer<bevy_mod_picking::prelude::Click>>> for ShipSelected {
-//     fn from(value: ListenerInput<bevy_mod_picking::prelude::Pointer<bevy_mod_picking::prelude::Click>>) -> Self {
-//         todo!()
-//     }
-// }
-
-// impl bevy_eventlistener::prelude::EntityEvent for ShipSelected {
-
-// }
-
-// impl From<EntityEvent<Click>> for ShipSelected {
-//     #[instrument(name = "grid_click", level = "trace", skip_all)]
-//     fn from(event: ListenedEvent<Click>) -> Self {
-//         GridCellClicked { cell: event.target }
-//     }
-// }
-
-// impl From<ListenerInput<Pointer<Click>>> for ShipSelected {
-//     fn from(event: ListenerInput<Pointer<Click>>) -> Self {
-//         ShipSelected(event.target, event.hit.depth)
-//     }
-// }
-
-// Unlike callback systems, this is a normal system that can be run in parallel with other systems.
-// fn receive_greetings(mut greetings: EventReader<ShipSelected>) {
-//     for event in greetings.iter() {
-//         info!(
-//             "Hello {:?}, you are {:?} depth units away from the pointer",
-//             event.0, event.1
-//         );
-//     }
-// }
-
-// #[derive(Event)]
-// pub(crate) struct ShipSelected(Entity);
-
-
-// fn ship_selected(
-//     mut ev_levelup: EventReader<ShipSelected>,
-// ) {
-//     for ev in ev_levelup.iter() {
-//         eprintln!("leveled up!");
-//         // eprintln!("Entity {:?} leveled up!", ev.0);
-//     }
-// }
+pub(crate) fn handle_ship_selected_event(
+    mut event: EventReader<ShipSelected>,
+    aerodrome_query: Query<(Entity, &Ship)>,
+    // mut ev_selected_aerodrome_change: EventWriter<ShipSelected>,
+) {
+    for select_event in event.iter() {
+        if let Ok((_entity, ship)) = aerodrome_query.get(select_event.0) {
+            dbg!(ship);
+            // ev_selected_aerodrome_change
+            //     .send(SelectedAerodromeChangeEvent(aerodrome_component.0.clone()));
+        }
+    }
+}

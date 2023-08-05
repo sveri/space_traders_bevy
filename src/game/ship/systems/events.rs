@@ -1,10 +1,32 @@
-use bevy::prelude::*;
+// use bevy::prelude::*;
+use bevy::asset::Handle;
+use bevy::prelude::{
+    shape, App, Assets, Color, Commands, Component, Entity, Event, EventReader, EventWriter, Mesh,
+    PbrBundle, Plugin, Query, Res, ResMut, Resource, StandardMaterial, Transform, Update, Vec3,
+    With,
+};
+use bevy_eventlistener::callbacks::ListenerInput;
+use bevy_mod_picking::prelude::{On, Pointer};
+use bevy_mod_picking::{
+    prelude::{Click, RaycastPickTarget},
+    PickableBundle,
+};
 
 use crate::game::ship::components::Ship;
 
 
-#[derive(Event)]
-pub(crate) struct ShipSelected(Ship);
+
+#[derive(Event, Component, Debug)]
+pub(crate) struct ShipSelected(Entity);
+// pub(crate) struct ShipSelected(Ship);
+
+impl From<ListenerInput<Pointer<Click>>> for ShipSelected {
+    fn from(click_event: ListenerInput<Pointer<Click>>) -> Self {
+        // dbg!(click_event.target.);
+        Self(click_event.target)
+        // ShipSelected()
+    }
+}
 
 // impl From<ListenerInput<bevy_mod_picking::prelude::Pointer<bevy_mod_picking::prelude::Click>>> for ShipSelected {
 //     fn from(value: ListenerInput<bevy_mod_picking::prelude::Pointer<bevy_mod_picking::prelude::Click>>) -> Self {

@@ -736,7 +736,7 @@ dependencies = [
 [[package]]
 name = "bevy_mod_picking"
 version = "0.14.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_eventlistener",
@@ -785,7 +785,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_core"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_eventlistener",
@@ -794,7 +794,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_highlight"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_picking_core",
@@ -805,7 +805,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_input"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_picking_core",
@@ -815,7 +815,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_raycast"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_mod_raycast",
@@ -825,7 +825,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_selection"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_eventlistener",
@@ -835,7 +835,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_sprite"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_picking_core",
@@ -844,7 +844,7 @@ dependencies = [
 [[package]]
 name = "bevy_picking_ui"
 version = "0.3.0"
-source = "git+https://github.com/bardt/bevy_mod_picking.git?rev=7ecb60e#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
+source = "git+https://github.com/bardt/bevy_mod_picking.git?branch=bevy_0.11#7ecb60e08735ce82f9ff03ba5adb434c1e336afd"
 dependencies = [
  "bevy",
  "bevy_picking_core",
@@ -3439,6 +3439,7 @@ name = "space_traders_bevy"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_eventlistener",
  "bevy_framepace",
  "bevy_mod_picking",
  "chrono",

@@ -1,7 +1,6 @@
 mod game;
 mod st_client;
 mod ui;
-mod util;
 
 use std::error::Error;
 

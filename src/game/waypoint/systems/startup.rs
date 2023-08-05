@@ -1,9 +1,9 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::prelude::*;
 use bevy_mod_picking::{PickableBundle, prelude::{RaycastPickTarget, Pointer, On, Click}};
 
 use crate::{st_client, game::waypoint::components::Waypoint};
 
-pub(crate) fn add_waypoints(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<ColorMaterial>>, asset_server: Res<AssetServer>) {
+pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServer>) {
     let agent_details = st_client::fetch_agent_details();
     let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
     waypoints.iter().for_each(|waypoint| {

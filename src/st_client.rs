@@ -6,6 +6,8 @@ use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::{Deserialize, Serialize};
 
+use crate::game::waypoint::components::Waypoints;
+
 
 
 #[derive(Debug, Deserialize)]
@@ -27,44 +29,6 @@ pub(crate) struct AgentDetails {
 impl AgentDetails {
     pub(crate) fn get_headquarter_system_symbol(&self) -> String {
         self.headquarters[0..self.headquarters.rfind('-').unwrap()].to_string()
-    }
-}
-
-pub(crate) type Waypoints = Vec<Waypoint>;
-
-#[derive(Debug, Deserialize, Component, Clone)]
-pub(crate) struct Waypoint {
-    #[serde(alias = "systemSymbol")]
-    pub(crate) system_symbol: String,
-    pub(crate) symbol: String,
-    pub(crate) x: f32,
-    pub(crate) y: f32,
-    traits: Vec<WaypointTrait>,
-}
-
-impl Waypoint {
-    pub(crate) fn get_display_size(&self) -> f32 {
-        5.
-    }
-
-    // pub(crate) fn get_position(&self) -> Point {
-    //     Point {x: self.x, y: self.y }
-    // }
-
-    pub(crate) fn in_bounds(&self, x: f32, y: f32) -> bool {
-        (x - self.x).powf(2.) + (y - self.y).powf(2.) <= self.get_display_size().powf(2.)
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub(crate) struct WaypointTrait {
-    name: String,
-}
-
-impl Waypoint {
-    pub(crate) fn get_traits(&self) -> String {
-        let ts = &self.traits;
-        ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(", ")
     }
 }
 

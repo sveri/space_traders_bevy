@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{st_client::Waypoint, game::ship::components::Ship};
+use crate::{game::{ship::components::Ship, waypoint::components::Waypoint}};
 
 
 #[derive(Component)]

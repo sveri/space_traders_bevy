@@ -1,6 +1,5 @@
 use bevy::{prelude::*, input::mouse::{MouseWheel, MouseScrollUnit}};
 
-use crate::{st_client::Waypoint, ui::{controls::components::*, hud::components::SelectedShipText}, game::ship::components::Ship};
 
 
 pub(crate) fn player_camera_control(

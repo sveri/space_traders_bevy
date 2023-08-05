@@ -6,6 +6,7 @@ mod util;
 use std::error::Error;
 
 use bevy::{prelude::*, winit::WinitSettings};
+use bevy_mod_picking::DefaultPickingPlugins;
 
 #[derive(Component)]
 struct Person;
@@ -33,6 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         .add_plugins((DefaultPlugins, MainPlugin))
         .add_plugins(bevy_framepace::FramepacePlugin)
+        .add_plugins(DefaultPickingPlugins)
         // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))
         .run();
 

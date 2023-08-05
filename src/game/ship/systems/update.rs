@@ -1,11 +1,11 @@
 use bevy::prelude::*;
+use bevy_mod_picking::{prelude::{RaycastPickTarget, Click, Pointer, On}, PickableBundle};
 
-use crate::{game::ship::components::ShipRepresentation, st_client::Waypoint};
+use crate::game::ship::components::Ship;
 
-pub(crate) fn show_ships(
-    mut commands: Commands, ships: Query<&crate::game::ship::components::Ship>,
-) {
+pub(crate) fn show_ships(mut commands: Commands, ships: Query<&Ship>) {
     for ship in ships.iter() {
+        let sym = ship.symbol.clone();
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
@@ -16,7 +16,11 @@ pub(crate) fn show_ships(
                 transform: Transform::from_translation(Vec3::new(ship.get_position().x, ship.get_position().y, 0.)),
                 ..default()
             },
-            ShipRepresentation,
+            PickableBundle::default(),    // <- Makes the mesh pickable.
+            RaycastPickTarget::default(), // <- Needed for the raycast backend.
+            On::<Pointer<Click>>::target_component_mut::<Ship>(|click, ship_rep| {
+                println!("{:?}", ship_rep);
+            })
         ));
     }
 }

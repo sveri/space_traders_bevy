@@ -7,12 +7,12 @@ use chrono::{DateTime, Duration, Utc};
 use crate::util::Point;
 
 
-#[derive(Component)]
-pub(crate) struct ShipRepresentation;
+// #[derive(Component, Debug)]
+// pub(crate) struct ShipRepresentation;
 
 
-#[derive(Component)]
-pub(super) struct ShipComponent;
+// #[derive(Component)]
+// pub(super) struct ShipComponent;
 
 
 pub(crate) type Ships = Vec<Ship>;

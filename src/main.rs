@@ -26,7 +26,10 @@ impl Plugin for MainPlugin {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    dotenvy::dotenv()?;
+    match dotenvy::dotenv() {
+        Ok(_) => {}
+        Err(_) => {panic!("please proved a .env file with the space traders key")}
+    }
 
     App::new()
         // .insert_resource(WinitSettings::desktop_app())

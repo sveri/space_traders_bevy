@@ -1,14 +1,12 @@
 use std::env;
 
-use bevy::prelude::Component;
 use bevy::app::AppLabel;
+use bevy::prelude::Component;
 use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::{Deserialize, Serialize};
 
 use crate::game::waypoint::components::Waypoints;
-
-
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
@@ -35,7 +33,7 @@ impl AgentDetails {
 #[derive(Serialize, Debug)]
 struct Navigate {
     #[serde(rename(serialize = "waypointSymbol"))]
-    waypoint_symbol: String    
+    waypoint_symbol: String,
 }
 
 pub(crate) fn fetch_agent_details() -> AgentDetails {
@@ -57,13 +55,15 @@ pub(crate) fn orbit_ship(ship_symbol: &str) -> String {
 
 pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
     let navigate = Navigate {
-        waypoint_symbol: target_waypoint
+        waypoint_symbol: target_waypoint,
     };
     dbg!(serde_json::to_string(&navigate).unwrap());
-    let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship_symbol).as_str(), serde_json::to_string(&navigate).unwrap());
+    let resp = send_post(
+        format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship_symbol).as_str(),
+        serde_json::to_string(&navigate).unwrap(),
+    );
     resp
 }
-
 
 pub(crate) fn send_get(url: &str) -> String {
     let client = reqwest::blocking::Client::new();
@@ -81,9 +81,15 @@ pub(crate) fn send_post(url: &str, body: String) -> String {
     }
 }
 
-
 fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
-    req.header("Authorization", format!("Bearer {}", get_api_key())).header("Content-Type", "application/json").send()
+    req.header("Authorization", format!("Bearer {}", get_api_key()))
+        .header("Content-Type", "application/json")
+        .send()
 }
 
-fn get_api_key() -> String { env::var("SPACE_TRADERS_API_KEY").unwrap() }
+fn get_api_key() -> String {
+    match env::var("SPACE_TRADERS_API_KEY") {
+        Ok(key) => key,
+        Err(_) => panic!("Please set the SPACE_TRADERS_API_KEY environment variable."),
+    }
+}

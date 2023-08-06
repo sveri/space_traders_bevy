@@ -1,9 +1,4 @@
-// use bevy::prelude::*;
-use bevy::asset::Handle;
-use bevy::prelude::{
-    shape, App, Assets, Color, Commands, Component, Entity, Event, EventReader, EventWriter, Mesh, PbrBundle, Plugin, Query, Res,
-    ResMut, Resource, StandardMaterial, Transform, Update, Vec3, With,
-};
+use bevy::prelude::*;
 use bevy::text::Text;
 use bevy_eventlistener::callbacks::ListenerInput;
 use bevy_mod_picking::prelude::Pointer;
@@ -24,7 +19,7 @@ impl From<ListenerInput<Pointer<Click>>> for ShipSelected {
 pub(crate) fn handle_ship_selected_event(
     mut event: EventReader<ShipSelected>,
     ship_query: Query<(Entity, &Ship)>,
-    mut select_ship_text: Query<&mut Text, With<SelectedShipText>>, // mut ev_selected_aerodrome_change: EventWriter<ShipSelected>,
+    mut select_ship_text: Query<&mut Text, With<SelectedShipText>>,
 ) {
     for select_event in event.iter() {
         if let Ok((_entity, ship)) = ship_query.get(select_event.0) {

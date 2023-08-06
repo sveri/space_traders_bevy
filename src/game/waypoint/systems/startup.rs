@@ -3,6 +3,8 @@ use bevy_mod_picking::{PickableBundle, prelude::{RaycastPickTarget, Pointer, On,
 
 use crate::{st_client, game::waypoint::components::Waypoint};
 
+use super::events::WaypointSelected;
+
 pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServer>) {
     let agent_details = st_client::fetch_agent_details();
     let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
@@ -20,9 +22,7 @@ pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServe
             },
             PickableBundle::default(),
             RaycastPickTarget::default(),
-            On::<Pointer<Click>>::target_component_mut::<Waypoint>(|click, waypoint_rep| {
-                println!("{:?}", waypoint_rep);
-            }),
+            On::<Pointer<Click>>::send_event::<WaypointSelected>(),
         ));
     })
 }

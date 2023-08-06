@@ -1,13 +1,12 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{PickableBundle, prelude::{RaycastPickTarget, Pointer, On, Click}};
 
-use crate::game::ship::{client::fetch_my_ships, components::Ship};
+use crate::game::ship::client::fetch_my_ships;
 
 use super::events::ShipSelected;
 
 
-pub(crate) fn add_ships(mut commands: Commands) {//}, mut ev_levelup: EventWriter<ShipSelected>) {
-// pub(crate) fn add_ships(mut commands: Commands) {
+pub(crate) fn add_ships(mut commands: Commands) {
     let ships = fetch_my_ships();
     ships.iter().for_each(|ship| {
         commands.spawn((

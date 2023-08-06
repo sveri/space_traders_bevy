@@ -23,15 +23,7 @@ pub(crate) fn add_ships(mut commands: Commands) {//}, mut ev_levelup: EventWrite
             },
             PickableBundle::default(),
             RaycastPickTarget::default(),
-            // On::<Pointer<Click>>::target_component_mut::<Ship>(|click, ship_rep| {
-            //     println!("{:?}", ship_rep);
-            //     ev_levelup.send(ShipSelected(ship_rep));
-            // }),
             On::<Pointer<Click>>::send_event::<ShipSelected>(),
-            // On::<Pointer<Click>>::send_event::<ShipSelected()>,
-            // On::<Pointer<Click>>::target_component_mut::<Ship>(|click, ship_rep| {
-            //     println!("{:?}", ship_rep);
-            // }),
         ));
     })
 }

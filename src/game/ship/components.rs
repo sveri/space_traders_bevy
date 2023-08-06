@@ -2,17 +2,7 @@
 
 use bevy::prelude::*;
 use serde::Deserialize;
-use chrono::{DateTime, Duration, Utc};
-
-use crate::util::Point;
-
-
-#[derive(Component)]
-pub(crate) struct ShipRepresentation;
-
-
-#[derive(Component)]
-pub(super) struct ShipComponent;
+use chrono::{DateTime, Utc};
 
 
 pub(crate) type Ships = Vec<Ship>;
@@ -30,32 +20,30 @@ impl Ship {
         (2., 4.)
     }
 
-    pub(crate) fn get_position(&self) -> Point {
+    pub(crate) fn get_position(&self) -> Vec3 {
         // ship arrivale and destination are the same
         if self.nav.route.departure.symbol == self.nav.route.destination.symbol {
-            return Point {x: self.nav.route.departure.x, y: self.nav.route.departure.y };
+            Vec3 {x: self.nav.route.departure.x, y: self.nav.route.departure.y, z: 1.0 }
         } else {
             let utc: DateTime<Utc> = Utc::now();
             let arrival_time: DateTime<Utc> = self.nav.route.arrival.parse::<DateTime<Utc>>().unwrap();
 
             // ship arrived at destination
             if (utc - arrival_time).num_milliseconds() > 0 {
-                return Point {x: self.nav.route.destination.x, y: self.nav.route.destination.y };
+                Vec3 {x: self.nav.route.destination.x, y: self.nav.route.destination.y, z: 1.0  }
             } 
             // ship is moving from departure to destination
             else {
-                return Point {x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2., y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2. };
+                Vec3 {x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2., y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2. , z: 1.0}
 
             }
         }
     }
 
-    pub(crate) fn in_bounds(&self, x: f32, y: f32) -> bool {
-        x <= self.get_position().x + self.get_display_size().0 / 2. 
-        && x >= self.get_position().x - self.get_display_size().0 / 2.
-        && y <= self.get_position().y + self.get_display_size().1 / 2.
-        && y >= self.get_position().y - self.get_display_size().1 / 2.
+    pub (crate) fn get_transform(&self) -> Transform {
+        Transform::from_translation(self.get_position())
     }
+
 }
 
 #[derive(Debug, Deserialize, Clone)]

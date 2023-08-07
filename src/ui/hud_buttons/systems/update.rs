@@ -16,6 +16,7 @@ pub(crate) fn orbit_clicked(
     mut error_text: Query<&mut Text, With<ErrorText>>,
 ) {
     for (interaction, children) in &mut interaction_query {
+        dbg!("clic");
         let mut text = text_query.get_mut(children[0]).unwrap();
         if *interaction == Interaction::Pressed {
             if let Ok(selected_ship) = selected_ship.get_single() {

@@ -1,6 +1,10 @@
 use bevy::{prelude::*, text::TextStyle};
+use bevy_eventlistener::prelude::On;
+use bevy_mod_picking::prelude::{Pointer, Click};
 
 use crate::ui::hud_buttons::components::*;
+
+use super::events::OrbitClicked;
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 
@@ -71,6 +75,7 @@ pub(in crate::ui::hud_buttons) fn setup_buttons(mut commands: Commands) {
                         ..default()
                     },
                     OrbitButton,
+                    On::<Pointer<Click>>::send_event::<OrbitClicked>(),
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(

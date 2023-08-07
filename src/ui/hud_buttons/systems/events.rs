@@ -31,7 +31,6 @@ struct NavWrapper {
 pub(crate) fn handle_orbit_clicked_event(
     selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<&mut Ship>,
 ) {
-    dbg!(&selected_ship.iter().len());
     if let Ok(selected_ship) = selected_ship.get_single() {
         let res = st_client::orbit_ship(selected_ship.ship.symbol.as_str());
         match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
@@ -43,7 +42,6 @@ pub(crate) fn handle_orbit_clicked_event(
                 }
             }
             Err(e) => {
-                dbg!(&res);
                 panic!("Error reading navigation data when orbiting ship: {e}");
             }
         }

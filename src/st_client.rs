@@ -57,7 +57,6 @@ pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
     let navigate = Navigate {
         waypoint_symbol: target_waypoint,
     };
-    dbg!(serde_json::to_string(&navigate).unwrap());
     let resp = send_post(
         format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship_symbol).as_str(),
         serde_json::to_string(&navigate).unwrap(),

@@ -17,6 +17,13 @@ use crate::ui::hud::components::ErrorText;
 // finally was able to use events with bevy 0.11 and patched bevy_mod_picking|_events
 // see here for an example: https://github.com/chriamue/flyconomy/blob/53d5b1d91aa39b6b97ff348f22ec35e0f1152a1f/src/game/aerodrome.rs#L33
 #[derive(Event, Component, Debug)]
+pub(crate) struct DockClicked;
+
+impl From<ListenerInput<Pointer<Click>>> for DockClicked {
+    fn from(_click_event: ListenerInput<Pointer<Click>>) -> Self { DockClicked }
+}
+
+#[derive(Event, Component, Debug)]
 pub(crate) struct OrbitClicked;
 
 impl From<ListenerInput<Pointer<Click>>> for OrbitClicked {

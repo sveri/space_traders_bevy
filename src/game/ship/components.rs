@@ -47,6 +47,7 @@ impl Ship {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+
 pub(crate) struct Nav {
     pub(crate) status: String,
     #[serde(alias = "waypointSymbol")]

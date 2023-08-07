@@ -19,13 +19,18 @@ impl From<ListenerInput<Pointer<Click>>> for ShipSelected {
 
 pub(crate) fn handle_ship_selected_event(
     mut commands: Commands, mut event: EventReader<ShipSelected>, ship_query: Query<(Entity, &Ship)>,
-    mut select_ship_text: Query<&mut Text, With<SelectedShipText>>,
+    mut select_ship_text: Query<&mut Text, With<SelectedShipText>>, mut selected_ship_query: Query<&mut SelectedShip>,
 ) {
     for select_event in event.iter() {
         if let Ok((_entity, ship)) = ship_query.get(select_event.0) {
             select_ship_text.single_mut().sections[0].value =
                 format!("Selected Ship: {}, Status: {}, Fuel: {}", ship.symbol, ship.nav.status, ship.fuel);
-            commands.spawn(SelectedShip { ship: ship.clone() });
+
+            if let Ok(mut ssq) = selected_ship_query.get_single_mut() {
+                ssq.ship = ship.clone();
+            } else {
+                commands.spawn(SelectedShip { ship: ship.clone() });
+            }
         }
     }
 }

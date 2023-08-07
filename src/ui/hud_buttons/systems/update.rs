@@ -42,7 +42,7 @@ pub(crate) fn move_ship_clicked(
         if *interaction == Interaction::Pressed {
             // Query::get_mut(&mut self, entity);
             // let mut ship: &mut Ship = selected_ship.get_single_mut().unwrap().ship;
-            if let (Ok(waypoint), Ok(ship)) = (selected_waypoint.get_single(), selected_ship.get_single_mut()) {
+            if let (Ok(waypoint), Ok(ship)) = (selected_waypoint.get_single(), selected_ship.get_single()) {
                 // if let (Ok(waypoint), ) = (selected_waypoint.get_single(), ) {
                     text.sections[0].value = "Moving".to_string();
                     let res = st_client::move_ship(ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());

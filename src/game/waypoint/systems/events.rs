@@ -19,15 +19,20 @@ impl From<ListenerInput<Pointer<Click>>> for WaypointSelected {
 
 pub(crate) fn handle_waypoint_selected_event(
     mut commands: Commands, mut event: EventReader<WaypointSelected>, waypoint_query: Query<(Entity, &Waypoint)>,
-    mut select_waypoint_text: Query<&mut Text, With<SelectedWaypointText>>,
+    mut select_waypoint_text: Query<&mut Text, With<SelectedWaypointText>>, mut selected_waypoint_query: Query<&mut SelectedWaypoint>,
 ) {
     for select_event in event.iter() {
         if let Ok((_entity, waypoint)) = waypoint_query.get(select_event.0) {
             select_waypoint_text.single_mut().sections[0].value =
                 format!("Selected Waypoint: {}, Traits: {}", waypoint.symbol, waypoint.get_traits());
-            commands.spawn(SelectedWaypoint {
-                waypoint: waypoint.clone(),
-            });
+
+            if let Ok(mut swq) = selected_waypoint_query.get_single_mut() {
+                swq.waypoint = waypoint.clone();
+            } else {
+                commands.spawn(SelectedWaypoint {
+                    waypoint: waypoint.clone(),
+                });
+            }
         }
     }
 }

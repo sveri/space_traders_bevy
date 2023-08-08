@@ -53,6 +53,11 @@ pub(crate) fn orbit_ship(ship_symbol: &str) -> String {
     resp
 }
 
+pub(crate) fn dock_ship(ship_symbol: &str) -> String {
+    let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/dock", ship_symbol).as_str(), "".to_string());
+    resp
+}
+
 pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
     let navigate = Navigate {
         waypoint_symbol: target_waypoint,

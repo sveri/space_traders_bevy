@@ -56,3 +56,25 @@ pub(crate) fn handle_orbit_clicked_event(
         error_text.single_mut().sections[0].value = "Error: No Ship Selected".to_string();
     }
 }
+
+pub(crate) fn handle_dock_clicked_event(
+    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<&mut Ship>,
+) {
+    if let Ok(selected_ship) = selected_ship.get_single() {
+        let res = st_client::dock_ship(selected_ship.ship.symbol.as_str());
+        match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
+            Ok(nav_details) => {
+                for mut ship_entity in &mut ships {
+                    if ship_entity.symbol == selected_ship.ship.symbol {
+                        ship_entity.nav = nav_details.data.nav.clone();
+                    }
+                }
+            }
+            Err(e) => {
+                panic!("Error reading navigation data when docking ship: {e}");
+            }
+        }
+    } else {
+        error_text.single_mut().sections[0].value = "Error: No Ship Selected".to_string();
+    }
+}

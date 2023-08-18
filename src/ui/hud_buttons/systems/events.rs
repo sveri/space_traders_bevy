@@ -115,3 +115,4 @@ pub(crate) fn handle_move_ship(
         error_text.single_mut().sections[0].value = "Error: You must select a ship and a waypoint".to_string();
     }
 }
+

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use crate::ui::hud_buttons::systems::layout::setup_buttons;
 
-use self::systems::events::{handle_dock_clicked_event, handle_orbit_clicked_event, DockClicked, OrbitClicked};
+use self::systems::events::{handle_dock_clicked_event, handle_orbit_clicked_event, DockClicked, OrbitClicked, MoveShipClicked, handle_move_ship};
 
 pub(crate) struct HudButtonsPlugin;
 
@@ -14,11 +14,13 @@ impl Plugin for HudButtonsPlugin {
         app.add_systems(Startup, setup_buttons)
             .add_event::<OrbitClicked>()
             .add_event::<DockClicked>()
+            .add_event::<MoveShipClicked>()
             .add_systems(
                 Update,
                 (
                     handle_orbit_clicked_event.run_if(on_event::<OrbitClicked>()),
                     handle_dock_clicked_event.run_if(on_event::<DockClicked>()),
+                    handle_move_ship.run_if(on_event::<MoveShipClicked>()),
                 ),
             );
     }

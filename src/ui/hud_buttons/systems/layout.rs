@@ -4,7 +4,7 @@ use bevy_mod_picking::prelude::{Click, Pointer};
 
 use crate::ui::hud_buttons::components::*;
 
-use super::events::{OrbitClicked, DockClicked};
+use super::events::{OrbitClicked, DockClicked, MoveShipClicked};
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 
@@ -46,6 +46,7 @@ pub(in crate::ui::hud_buttons) fn setup_buttons(mut commands: Commands) {
                 .spawn((
                     button_bundle(70., 20.),
                     MoveButton,
+                    On::<Pointer<Click>>::send_event::<MoveShipClicked>(),
                 ))
                 .with_children(|parent| {
                     parent.spawn(text_bundle("Move Ship"));

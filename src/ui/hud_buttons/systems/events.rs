@@ -4,14 +4,14 @@ use bevy_eventlistener::callbacks::ListenerInput;
 use bevy_mod_picking::prelude::Click;
 use bevy_mod_picking::prelude::Pointer;
 use serde::Deserialize;
+// use bevy::prelude::Eve
 
 use crate::game::ship::components::Nav;
 use crate::game::ship::components::Ship;
-use crate::game::waypoint::components::Waypoint;
+use crate::game::ship::systems::events::ShipSelected;
 use crate::st_client;
 use crate::st_client::GenericResponse;
 use crate::ui::controls::components::SelectedShip;
-use crate::ui::controls::components::SelectedWaypointText;
 use crate::ui::hud::components::ErrorText;
 
 // finally was able to use events with bevy 0.11 and patched bevy_mod_picking|_events
@@ -58,15 +58,18 @@ pub(crate) fn handle_orbit_clicked_event(
 }
 
 pub(crate) fn handle_dock_clicked_event(
-    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<&mut Ship>,
+    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &mut Ship)>, mut ship_selected_event: EventWriter<ShipSelected>, 
 ) {
     if let Ok(selected_ship) = selected_ship.get_single() {
         let res = st_client::dock_ship(selected_ship.ship.symbol.as_str());
         match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
             Ok(nav_details) => {
-                for mut ship_entity in &mut ships {
-                    if ship_entity.symbol == selected_ship.ship.symbol {
-                        ship_entity.nav = nav_details.data.nav.clone();
+                for (ship_entity, mut ship) in ships.iter_mut() {
+                    if ship.symbol == selected_ship.ship.symbol {
+                        ship.nav = nav_details.data.nav.clone();
+                        ship_selected_event.send(ShipSelected(ship_entity));
+                        dbg!("Ship selected event sent");
+                        break;
                     }
                 }
             }

@@ -19,8 +19,8 @@ bevy_framepace = "0.13.3"
 chrono = "0.4.26"
 # bevy_mod_picking = "0.14.0"
 # bevy_mod_picking = { git = "https://github.com/bardt/bevy_mod_picking.git", rev = "7ecb60e" }
-bevy_mod_picking = { git = "https://github.com/bardt/bevy_mod_picking.git", branch = "bevy_0.11" }
-bevy_eventlistener = { git = "https://github.com/aevyrie/bevy_eventlistener.git", rev = "4d8de4c" }
+bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking.git", rev = "a9e7275" }
+bevy_eventlistener = "0.3.0"
 # bevy_eventlistener = "0.2.2"
 
 

@@ -4,7 +4,7 @@ mod ui;
 
 use std::error::Error;
 
-use bevy::{prelude::*, winit::WinitSettings, log::LogPlugin};
+use bevy::{prelude::*, winit::WinitSettings, log::LogPlugin, window::PresentMode};
 use bevy_mod_picking::{DefaultPickingPlugins, prelude::RaycastPickCamera};
 
 #[derive(Component)]
@@ -15,7 +15,7 @@ struct Name(String);
 
 fn setup_camera(mut commands: Commands) {
     let mut bundle = Camera2dBundle::default();
-    bundle.projection.scale = 0.234;
+    bundle.projection.scale = 0.134;
     commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default(), ));
 }
 
@@ -37,6 +37,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         .add_plugins((DefaultPlugins.set(LogPlugin {
             filter: "warn,mygame=debug".into(),
             level: bevy::log::Level::DEBUG,
+        }).set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Space Traders".into(),
+                resolution: (1900., 1100.).into(),
+                position: WindowPosition::At((300, 80).into()),
+                present_mode: PresentMode::AutoVsync,
+                ..default()
+            }),
+            ..default()
         }), MainPlugin))
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_plugins(DefaultPickingPlugins)

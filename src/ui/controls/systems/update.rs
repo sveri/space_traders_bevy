@@ -12,7 +12,6 @@ pub(crate) fn player_camera_control(
             let mut log_scale = projection.scale.ln();
             match ev.unit {
                 MouseScrollUnit::Line => {
-                    println!("Scroll (line units): vertical: {}, horizontal: {}", ev.y, ev.x);
                     if ev.y > 0.0 {
                         log_scale -= dist;
                     } else {

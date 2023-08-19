@@ -1,6 +1,6 @@
 pub(super) mod ship;
 pub(super) mod waypoint;
-
+pub(crate) mod components;
 
 
 use bevy::prelude::*;

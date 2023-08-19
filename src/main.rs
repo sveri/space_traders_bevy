@@ -2,10 +2,12 @@ mod game;
 mod st_client;
 mod ui;
 
-use std::error::Error;
+use std::{error::Error, time::Duration};
 
-use bevy::{prelude::*, winit::WinitSettings, log::LogPlugin, window::PresentMode};
+use bevy::{prelude::*, winit::WinitSettings, log::LogPlugin, window::PresentMode, app::PluginGroupBuilder, time::common_conditions::on_timer};
 use bevy_mod_picking::{DefaultPickingPlugins, prelude::RaycastPickCamera};
+use bevy_save::{SavePlugins, AppSaveableExt, WorldSaveableExt};
+use game::components::Market;
 
 #[derive(Component)]
 struct Person;
@@ -19,10 +21,23 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default(), ));
 }
 
+fn save_world(world: &mut World) {
+    world.save("space_traders").expect("Failed to save");
+}
+
+struct SavePlugin;
+
+impl Plugin for SavePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(SavePlugins).register_saveable::<Market>().add_systems(Update, save_world.run_if(on_timer(Duration::from_secs(10))));
+    }
+
+}
+
 struct MainPlugin;
 
 impl Plugin for MainPlugin {
-    fn build(&self, app: &mut App) { app.add_plugins((game::GamePlugin, ui::UiPlugin)).add_systems(Startup, setup_camera); }
+    fn build(&self, app: &mut App) { app.add_plugins((game::GamePlugin, ui::UiPlugin, SavePlugin)).add_systems(Startup, setup_camera); }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {

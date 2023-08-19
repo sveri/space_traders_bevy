@@ -19,6 +19,7 @@ chrono = "0.4.26"
 
 bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking.git", rev = "a9e7275" }
 bevy_eventlistener = "0.3.0"
+bevy_save = "0.9.1"
 
 
 # Enable a small amount of optimization in debug mode

@@ -6,9 +6,13 @@ use bevy_mod_picking::prelude::Pointer;
 use serde::Deserialize;
 // use bevy::prelude::Eve
 
+use crate::game::ship::components::FlightMode;
+use crate::game::ship::components::FlightStatus;
 use crate::game::ship::components::Nav;
 use crate::game::ship::components::Ship;
 use crate::game::ship::systems::events::ShipSelected;
+use crate::game::waypoint;
+use crate::game::waypoint::components::Waypoint;
 use crate::st_client;
 use crate::st_client::GenericResponse;
 use crate::ui::controls::components::SelectedShip;
@@ -38,13 +42,21 @@ impl From<ListenerInput<Pointer<Click>>> for MoveShipClicked {
     fn from(_click_event: ListenerInput<Pointer<Click>>) -> Self { MoveShipClicked }
 }
 
+#[derive(Event, Component, Debug)]
+pub(crate) struct GetMarketClicked;
+
+impl From<ListenerInput<Pointer<Click>>> for GetMarketClicked {
+    fn from(_click_event: ListenerInput<Pointer<Click>>) -> Self { GetMarketClicked }
+}
+
 #[derive(Deserialize, Clone, Debug)]
 struct NavWrapper {
     nav: Nav,
 }
 
 pub(crate) fn handle_orbit_clicked_event(
-    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &mut Ship)>, mut ship_selected_event: EventWriter<ShipSelected>
+    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
+    mut ships: Query<(Entity, &mut Ship)>, mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
     if let Ok(selected_ship) = selected_ship.get_single() {
         let res = st_client::orbit_ship(selected_ship.ship.symbol.as_str());
@@ -92,8 +104,9 @@ pub(crate) fn handle_dock_clicked_event(
 }
 
 pub(crate) fn handle_move_ship(
-    selected_ship_query: Query<&SelectedShip>, selected_waypoint: Query<&SelectedWaypoint>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    mut ships: Query<(Entity, &mut Ship)>, mut ship_selected_event: EventWriter<ShipSelected>,
+    selected_ship_query: Query<&SelectedShip>, selected_waypoint: Query<&SelectedWaypoint>,
+    mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &mut Ship)>,
+    mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
     if let (Ok(waypoint), Ok(selected_ship)) = (selected_waypoint.get_single(), selected_ship_query.get_single()) {
         let res = st_client::move_ship(selected_ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());
@@ -116,3 +129,38 @@ pub(crate) fn handle_move_ship(
     }
 }
 
+pub(crate) fn handle_get_market_clicked(
+    selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
+    waypoint_query: Query<&Waypoint>,
+) {
+    if let Ok(selected_ship) = selected_ship_query.get_single() {
+
+        if selected_ship.ship.nav.status == FlightStatus::IN_TRANSIT {
+            error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
+            return;
+        }
+
+        // for waypoint in waypoint_query.iter() {
+        //     if waypoint.symbol ==
+        // }
+        // waypoint_query.iter().try_find(f)
+
+        // let res = st_client::move_ship(selected_ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());
+        // match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
+        //     Ok(nav_details) => {
+        //         for (ship_entity, mut ship) in ships.iter_mut() {
+        //             if ship.symbol == selected_ship.ship.symbol {
+        //                 ship.nav = nav_details.data.nav.clone();
+        //                 ship_selected_event.send(ShipSelected(ship_entity));
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //     Err(e) => {
+        //         panic!("Error reading navigation data when moving ship: {e}");
+        //     }
+        // }
+    } else {
+        error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
+    }
+}

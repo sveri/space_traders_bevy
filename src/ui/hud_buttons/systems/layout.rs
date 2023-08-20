@@ -4,7 +4,7 @@ use bevy_mod_picking::prelude::{Click, Pointer};
 
 use crate::ui::hud_buttons::components::*;
 
-use super::events::{OrbitClicked, DockClicked, MoveShipClicked};
+use super::events::{OrbitClicked, DockClicked, MoveShipClicked, GetMarketClicked};
 
 const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 
@@ -23,7 +23,7 @@ pub(in crate::ui::hud_buttons) fn setup_buttons(mut commands: Commands) {
             parent
                 .spawn((
                     button_bundle(10., 20.),
-                    OrbitButton,
+                    DockButton,
                     On::<Pointer<Click>>::send_event::<DockClicked>(),
                 ))
                 .with_children(|parent| {
@@ -50,6 +50,17 @@ pub(in crate::ui::hud_buttons) fn setup_buttons(mut commands: Commands) {
                 ))
                 .with_children(|parent| {
                     parent.spawn(text_bundle("Move Ship"));
+                });
+        })
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    button_bundle(100., 20.),
+                    GetMarketButton,
+                    On::<Pointer<Click>>::send_event::<GetMarketClicked>(),
+                ))
+                .with_children(|parent| {
+                    parent.spawn(text_bundle("Get Market"));
                 });
         });
 }

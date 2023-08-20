@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt::Display;
+
 use bevy::prelude::*;
 use serde::Deserialize;
 use chrono::{DateTime, Utc};
@@ -49,10 +51,37 @@ impl Ship {
 #[derive(Debug, Deserialize, Clone)]
 
 pub(crate) struct Nav {
-    pub(crate) status: String,
+    pub(crate) status: FlightStatus,
     #[serde(alias = "waypointSymbol")]
     pub(crate) waypoint_symbol: String,
+    #[serde(alias = "flightMode")]
+    pub(crate) flight_mode: FlightMode,
     pub(crate) route: Route,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+pub(crate) enum FlightStatus {
+    IN_TRANSIT,
+    IN_ORBIT,
+    DOCKED
+}
+
+impl Display for FlightStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FlightStatus::IN_TRANSIT => write!(f, "In Transit"),
+            FlightStatus::IN_ORBIT => write!(f, "In Orbit"),
+            FlightStatus::DOCKED => write!(f, "Docked"),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+pub(crate) enum FlightMode {
+    DRIFT,
+    STEALTH,
+    CRUISE,
+    BURN
 }
 
 #[derive(Debug, Deserialize, Clone)]

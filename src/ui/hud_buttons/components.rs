@@ -4,5 +4,11 @@ use bevy::prelude::*;
 pub struct MoveButton;
 
 #[derive(Component)]
-// pub(super) struct OrbitButton;
-pub struct OrbitButton;
+pub(crate) struct OrbitButton;
+
+#[derive(Component)]
+pub(crate) struct DockButton;
+
+
+#[derive(Component)]
+pub(crate) struct GetMarketButton;

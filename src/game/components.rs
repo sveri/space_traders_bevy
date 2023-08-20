@@ -3,7 +3,7 @@
 use bevy::{prelude::{Component, ReflectComponent}, reflect::Reflect};
 use serde::Deserialize;
 
-#[derive(Deserialize, Reflect, Component, Default)]
+#[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct Market {
     symbol: String,
@@ -14,7 +14,7 @@ pub(crate) struct Market {
     trade_goods: Vec<TradeGood>,
 }
 
-#[derive(Deserialize, Reflect, Component, Default)]
+#[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct ImportExport {
     pub(crate) symbol: String,
@@ -22,7 +22,7 @@ pub(crate) struct ImportExport {
     pub(crate) description: String,
 }
 
-#[derive(Deserialize, Reflect, Component, Default)]
+#[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct Transaction {
     #[serde(alias = "waypointSymbol")]
@@ -31,7 +31,8 @@ pub(crate) struct Transaction {
     pub(crate) ship_symbol: String,
     #[serde(alias = "tradeSymbol")]
     pub(crate) trade_symbol: String,
-    pub(crate) type_: String,
+    #[serde(alias = "type")]
+    pub(crate) transaction_type: String,
     pub(crate) units: i32,
     #[serde(alias = "pricePerUnit")]
     pub(crate) price_per_unit: f32,
@@ -40,7 +41,7 @@ pub(crate) struct Transaction {
     pub(crate) timestamp: String,
 }
 
-#[derive(Deserialize, Reflect, Component, Default)]
+#[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct TradeGood {
     pub(crate) symbol: String,

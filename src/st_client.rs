@@ -3,9 +3,9 @@ use std::env;
 use anyhow::Result;
 use reqwest::blocking::{RequestBuilder, Response};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
-use crate::game::waypoint::components::Waypoints;
+use crate::game::{waypoint::components::Waypoints, components::Market};
 
 
 
@@ -74,11 +74,17 @@ pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
     resp
 }
 
-pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<String> {
-    let resp = send_get(
+pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
+    let resp: Market = send_get_with_response_type(
         format!("https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market", system_symbol, waypoint_symbol).as_str(),
-    );
-    resp
+    )?;
+    Ok(resp)
+}
+
+pub(crate) fn send_get_with_response_type<T: DeserializeOwned>(url: &str) -> Result<T> {
+    let client = reqwest::blocking::Client::new();
+    let r = send_with_header(client.get(url))?.text()?;
+    Ok(serde_json::from_str::<GenericResponse<T>>(&r)?.data)
 }
 
 pub(crate) fn send_get(url: &str) -> Result<String> {
@@ -95,18 +101,18 @@ pub(crate) fn send_post(url: &str, body: String) -> String {
     }
 }
 
-fn send_with_header(req: RequestBuilder) -> Result<Response> {
-    let r = req.header("Authorization", format!("Bearer {}", get_api_key()))
-        .header("Content-Type", "application/json")
-        .send()?;
-    Ok(r)
-}
-
-// fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
-//     req.header("Authorization", format!("Bearer {}", get_api_key()))
+// fn send_with_header(req: RequestBuilder) -> Result<Response> {
+//     let r = req.header("Authorization", format!("Bearer {}", get_api_key()))
 //         .header("Content-Type", "application/json")
-//         .send()
+//         .send()?;
+//     Ok(r)
 // }
+
+fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
+    req.header("Authorization", format!("Bearer {}", get_api_key()))
+        .header("Content-Type", "application/json")
+        .send()
+}
 
 fn get_api_key() -> String {
     match env::var("SPACE_TRADERS_API_KEY") {

@@ -143,15 +143,19 @@ pub(crate) fn handle_get_market_clicked(
         let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
         let found_waypoint = found_waypoints.get(0).unwrap();
 
-        let res = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
-        match res {
-            Ok(market_data) => {
-                println!("market data: {:?}", market_data);
-            }
-            Err(e) => {
-                error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
-            }
-        }
+        // st_client::send_get_with_response_type
+
+        let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
+        dbg!(market_details);
+        // match res {
+        //     Ok(market_data) => {
+        //         println!("market data: {:?}", market_data);
+        //     }
+        //     Err(e) => {
+        //         dbg!(&e);
+        //         error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
+        //     }
+        // }
     } else {
         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
     }

@@ -1,12 +1,17 @@
 use std::env;
 
-use bevy::app::AppLabel;
-use bevy::prelude::Component;
+use anyhow::Result;
 use reqwest::blocking::{RequestBuilder, Response};
 
 use serde::{Deserialize, Serialize};
 
 use crate::game::waypoint::components::Waypoints;
+
+
+
+#[derive(Debug)]
+struct SpaceTradersApiError;
+
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
@@ -38,13 +43,13 @@ struct Navigate {
 
 pub(crate) fn fetch_agent_details() -> AgentDetails {
     let resp = send_get("https://api.spacetraders.io/v2/my/agent");
-    let agent_details: GenericResponse<AgentDetails> = serde_json::from_str(&resp).unwrap();
+    let agent_details: GenericResponse<AgentDetails> = serde_json::from_str(&resp.unwrap()).unwrap();
     agent_details.data
 }
 
 pub(crate) fn fetch_waypoints(system_symbol: &str) -> Waypoints {
     let resp = send_get(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str());
-    let response: GenericResponse<Waypoints> = serde_json::from_str(&resp).unwrap();
+    let response: GenericResponse<Waypoints> = serde_json::from_str(&resp.unwrap()).unwrap();
     response.data
 }
 
@@ -69,19 +74,17 @@ pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
     resp
 }
 
-pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> String {
+pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<String> {
     let resp = send_get(
         format!("https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market", system_symbol, waypoint_symbol).as_str(),
     );
     resp
 }
 
-pub(crate) fn send_get(url: &str) -> String {
+pub(crate) fn send_get(url: &str) -> Result<String> {
     let client = reqwest::blocking::Client::new();
-    match send_with_header(client.get(url)) {
-        Ok(resp) => resp.text().unwrap(),
-        Err(err) => panic!("Error: {}", err),
-    }
+    let r = send_with_header(client.get(url))?.text()?;
+    Ok(r)
 }
 
 pub(crate) fn send_post(url: &str, body: String) -> String {
@@ -92,11 +95,18 @@ pub(crate) fn send_post(url: &str, body: String) -> String {
     }
 }
 
-fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
-    req.header("Authorization", format!("Bearer {}", get_api_key()))
+fn send_with_header(req: RequestBuilder) -> Result<Response> {
+    let r = req.header("Authorization", format!("Bearer {}", get_api_key()))
         .header("Content-Type", "application/json")
-        .send()
+        .send()?;
+    Ok(r)
 }
+
+// fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
+//     req.header("Authorization", format!("Bearer {}", get_api_key()))
+//         .header("Content-Type", "application/json")
+//         .send()
+// }
 
 fn get_api_key() -> String {
     match env::var("SPACE_TRADERS_API_KEY") {

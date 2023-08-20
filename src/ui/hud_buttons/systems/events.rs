@@ -143,35 +143,15 @@ pub(crate) fn handle_get_market_clicked(
         let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
         let found_waypoint = found_waypoints.get(0).unwrap();
 
-        // for waypoint in waypoint_query.iter() {
-        //     if waypoint.symbol ==
-        // }
-        // waypoint_query.iter().try_find(f)
-
         let res = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
-        dbg!(res);
-        // match res {
-        //     Ok(market_data) => {
-        //         println!("market data: {:?}", market_data);
-        //     }
-        //     Err(e) => {
-        //         error_text.single_mut().sections[0].value = "Error: Unable to read market data {e}.".to_string();
-        //     }
-        // }
-        // match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
-        //     Ok(nav_details) => {
-        //         for (ship_entity, mut ship) in ships.iter_mut() {
-        //             if ship.symbol == selected_ship.ship.symbol {
-        //                 ship.nav = nav_details.data.nav.clone();
-        //                 ship_selected_event.send(ShipSelected(ship_entity));
-        //                 break;
-        //             }
-        //         }
-        //     }
-        //     Err(e) => {
-        //         panic!("Error reading navigation data when moving ship: {e}");
-        //     }
-        // }
+        match res {
+            Ok(market_data) => {
+                println!("market data: {:?}", market_data);
+            }
+            Err(e) => {
+                error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
+            }
+        }
     } else {
         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
     }

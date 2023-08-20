@@ -140,12 +140,24 @@ pub(crate) fn handle_get_market_clicked(
             return;
         }
 
+        let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
+        let found_waypoint = found_waypoints.get(0).unwrap();
+
         // for waypoint in waypoint_query.iter() {
         //     if waypoint.symbol ==
         // }
         // waypoint_query.iter().try_find(f)
 
-        // let res = st_client::move_ship(selected_ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());
+        let res = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
+        dbg!(res);
+        // match res {
+        //     Ok(market_data) => {
+        //         println!("market data: {:?}", market_data);
+        //     }
+        //     Err(e) => {
+        //         error_text.single_mut().sections[0].value = "Error: Unable to read market data {e}.".to_string();
+        //     }
+        // }
         // match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
         //     Ok(nav_details) => {
         //         for (ship_entity, mut ship) in ships.iter_mut() {

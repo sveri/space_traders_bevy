@@ -69,6 +69,13 @@ pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
     resp
 }
 
+pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> String {
+    let resp = send_get(
+        format!("https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market", system_symbol, waypoint_symbol).as_str(),
+    );
+    resp
+}
+
 pub(crate) fn send_get(url: &str) -> String {
     let client = reqwest::blocking::Client::new();
     match send_with_header(client.get(url)) {

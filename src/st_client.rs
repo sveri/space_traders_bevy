@@ -1,17 +1,31 @@
-use std::env;
+use std::{env, fmt::Display};
 
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use reqwest::blocking::{RequestBuilder, Response};
 
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::game::{waypoint::components::Waypoints, components::Market};
+use crate::game::{components::Market, waypoint::components::Waypoints};
 
+// #[derive(Debug)]
+// enum SpaceTradersApiError {
+//     JsonUnwrapError,
+// }
 
+#[derive(thiserror::Error, Debug)]
+enum SpaceTradersApiError {
+    #[error("Unwrapping json failed: {0}")]
+    JsonUnwrapError(#[from] serde_json::Error),
+    // JsonUnwrapError(String),
+}
 
-#[derive(Debug)]
-struct SpaceTradersApiError;
-
+// impl Display for SpaceTradersApiError {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             SpaceTradersApiError::JsonUnwrapError => write!(f, "Error unwrapping json"),
+//         }
+//     }
+// }
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
@@ -84,7 +98,8 @@ pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Res
 pub(crate) fn send_get_with_response_type<T: DeserializeOwned>(url: &str) -> Result<T> {
     let client = reqwest::blocking::Client::new();
     let r = send_with_header(client.get(url))?.text()?;
-    Ok(serde_json::from_str::<GenericResponse<T>>(&r)?.data)
+    serde_json::from_str::<GenericResponse<T>>(&r)
+        .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e))), |resp| Ok(resp.data))
 }
 
 pub(crate) fn send_get(url: &str) -> Result<String> {

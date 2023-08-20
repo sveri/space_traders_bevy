@@ -44,7 +44,7 @@ pub(crate) struct Transaction {
 #[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct TradeGood {
-    pub(crate) symbol: String,
+    pub(crate) symbolsdf: String,
     #[serde(alias = "tradeVolume")]
     pub(crate) trade_volume: i32,
     pub(crate) supply: String,

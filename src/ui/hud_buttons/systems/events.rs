@@ -146,7 +146,16 @@ pub(crate) fn handle_get_market_clicked(
         // st_client::send_get_with_response_type
 
         let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
-        dbg!(market_details);
+        match market_details {
+            Ok(market_data) => {
+                println!("market data: {:?}", market_data);
+            }
+            Err(e) => {
+                println!("{e}");
+                error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
+            }
+        }
+        // dbg!(market_details);
         // match res {
         //     Ok(market_data) => {
         //         println!("market data: {:?}", market_data);

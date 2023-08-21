@@ -1,1 +1,1 @@
-pub(super) mod update;
+pub(crate) mod update;

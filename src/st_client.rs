@@ -61,10 +61,17 @@ pub(crate) fn fetch_agent_details() -> AgentDetails {
     agent_details.data
 }
 
-pub(crate) fn fetch_waypoints(system_symbol: &str) -> Waypoints {
-    let resp = send_get(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str());
-    let response: GenericResponse<Waypoints> = serde_json::from_str(&resp.unwrap()).unwrap();
-    response.data
+// pub(crate) fn fetch_waypoints(system_symbol: &str) -> Waypoints {
+//     let resp = send_get(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str());
+//     let response: GenericResponse<Waypoints> = serde_json::from_str(&resp.unwrap()).unwrap();
+//     response.data
+// }
+
+pub(crate) fn fetch_waypoints(system_symbol: &str) -> Result<Waypoints> {
+    let resp: Waypoints = send_get_with_response_type(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str())?;
+    Ok(resp)
+    // let response: GenericResponse<Waypoints> = serde_json::from_str(&resp.unwrap()).unwrap();
+    // response.data
 }
 
 pub(crate) fn orbit_ship(ship_symbol: &str) -> String {
@@ -98,6 +105,14 @@ pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Res
 pub(crate) fn send_get_with_response_type<T: DeserializeOwned>(url: &str) -> Result<T> {
     let client = reqwest::blocking::Client::new();
     let r = send_with_header(client.get(url))?.text()?;
+    // match serde_json::from_str::<GenericResponse<T>>(&r) {
+    //     Ok(resp) => Ok(resp.data),
+    //     Err(e) => {
+    //         dbg!(r);
+    //         dbg!(&e);
+    //         Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e)))
+    //     },
+    // }
     serde_json::from_str::<GenericResponse<T>>(&r)
         .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e))), |resp| Ok(resp.data))
 }

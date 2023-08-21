@@ -1,11 +1,7 @@
-
-
 use std::fmt::{self, Display};
 
 use bevy::prelude::*;
 use serde::Deserialize;
-
-
 
 pub(crate) type Waypoints = Vec<Waypoint>;
 
@@ -21,43 +17,70 @@ pub(crate) struct Waypoint {
 }
 
 impl Waypoint {
-    pub(crate) fn get_display_size(&self) -> f32 {
-        5.
-    }
+    pub(crate) fn get_display_size(&self) -> f32 { 5. }
 
     pub(crate) fn get_traits(&self) -> String {
         let ts = &self.traits;
-        ts.iter().map(|t| t.clone().to_string()).collect::<Vec<String>>().join(", ")
+        ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(", ")
     }
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
-pub(crate) enum  WaypointTrait{    
-    Uncharted,
-    Marketplace,
-    Shipyard,
-    Outpost,
-    Symbol,
+#[derive(Debug, Deserialize, Clone)]
+pub(crate) struct WaypointTrait {
+    name: String,
+    symbol: WaypointTraitSymbol,
 }
 
-impl Display for WaypointTrait {
+
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+pub(crate) enum WaypointTraitSymbol {
+    UNCHARTED,
+    MARKETPLACE,
+    SHIPYARD,
+    OUTPOST,
+    TOXIC_ATMOSPHERE,
+    VOLCANIC,
+    WEAK_GRAVITY,
+    OVERCROWDED,
+    HIGH_TECH,
+    BUREAUCRATIC,
+    TEMPERATE,
+    BARREN,
+    FROZEN,
+    MINERAL_DEPOSITS,
+    COMMON_METAL_DEPOSITS,
+    STRIPPED,
+    VIBRANT_AURORAS,
+    STRONG_MAGNETOSPHERE,
+    MILITARY_BASE,
+    DRY_SEABEDS,
+
+}
+
+impl Display for WaypointTraitSymbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            WaypointTrait::Uncharted => write!(f, "Uncharted"),
-            WaypointTrait::Marketplace => write!(f, "Marketplace"),
-            WaypointTrait::Shipyard => write!(f, "Shipyard"),
-            WaypointTrait::Outpost => write!(f, "Outpost"),
-            WaypointTrait::Symbol => write!(f, "Symbol"),
+            WaypointTraitSymbol::DRY_SEABEDS => write!(f, "DRY_SEABEDS"),
+            WaypointTraitSymbol::MILITARY_BASE => write!(f, "MILITARY_BASE"),
+            WaypointTraitSymbol::STRONG_MAGNETOSPHERE => write!(f, "STRONG_MAGNETOSPHERE"),
+            WaypointTraitSymbol::VIBRANT_AURORAS => write!(f, "VIBRANT_AURORAS"),
+            WaypointTraitSymbol::STRIPPED => write!(f, "STRIPPED"),
+            WaypointTraitSymbol::COMMON_METAL_DEPOSITS => write!(f, "COMMON_METAL_DEPOSITS"),
+            WaypointTraitSymbol::MINERAL_DEPOSITS => write!(f, "MINERAL_DEPOSITS"),
+            WaypointTraitSymbol::FROZEN => write!(f, "FROZEN"),
+            WaypointTraitSymbol::BARREN => write!(f, "BARREN"),
+            WaypointTraitSymbol::TEMPERATE => write!(f, "TEMPERATE"),
+            WaypointTraitSymbol::UNCHARTED => write!(f, "UNCHARTED"),
+            WaypointTraitSymbol::MARKETPLACE => write!(f, "MARKETPLACE"),
+            WaypointTraitSymbol::SHIPYARD => write!(f, "SHIPYARD"),
+            WaypointTraitSymbol::OUTPOST => write!(f, "OUTPOST"),
+            WaypointTraitSymbol::TOXIC_ATMOSPHERE => write!(f, "Toxic_Atmosphere"),
+            WaypointTraitSymbol::VOLCANIC => write!(f, "VOLCANIC"),
+            WaypointTraitSymbol::WEAK_GRAVITY => write!(f, "WEAK_GRAVITY"),
+            WaypointTraitSymbol::OVERCROWDED => write!(f, "OVERCROWDED"),
+            WaypointTraitSymbol::HIGH_TECH => write!(f, "HIGH_TECH"),
+            WaypointTraitSymbol::BUREAUCRATIC => write!(f, "BUREAUCRATIC"),
         }
     }
 }
-
-
-// impl fmt::Display for WaypointTrait {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         match self {
-//             WaypointTrait::Uncharted => write!(f, "Uncharted"),
-//         }
-//     }
-// }
-    

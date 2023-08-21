@@ -7,7 +7,7 @@ use super::events::WaypointSelected;
 
 pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServer>) {
     let agent_details = st_client::fetch_agent_details();
-    let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str());
+    let waypoints = st_client::fetch_waypoints(agent_details.get_headquarter_system_symbol().as_str()).unwrap();
     waypoints.iter().for_each(|waypoint| {
         commands.spawn((
             waypoint.to_owned(),

@@ -7,11 +7,6 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::game::{components::Market, waypoint::components::Waypoints};
 
-// #[derive(Debug)]
-// enum SpaceTradersApiError {
-//     JsonUnwrapError,
-// }
-
 #[derive(thiserror::Error, Debug)]
 enum SpaceTradersApiError {
     #[error("Unwrapping json failed: {0}")]
@@ -19,13 +14,6 @@ enum SpaceTradersApiError {
     // JsonUnwrapError(String),
 }
 
-// impl Display for SpaceTradersApiError {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         match self {
-//             SpaceTradersApiError::JsonUnwrapError => write!(f, "Error unwrapping json"),
-//         }
-//     }
-// }
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {

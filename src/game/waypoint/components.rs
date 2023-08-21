@@ -12,7 +12,6 @@ pub(crate) struct Waypoint {
     pub(crate) symbol: String,
     pub(crate) x: f32,
     pub(crate) y: f32,
-    // traits: Vec<WaypointTrait>,
     traits: Vec<WaypointTrait>,
 }
 
@@ -22,6 +21,10 @@ impl Waypoint {
     pub(crate) fn get_traits(&self) -> String {
         let ts = &self.traits;
         ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(", ")
+    }
+
+    pub(crate) fn has_marketplace(&self) -> bool {
+        self.traits.iter().any(|t| t.symbol == WaypointTraitSymbol::MARKETPLACE)
     }
 }
 

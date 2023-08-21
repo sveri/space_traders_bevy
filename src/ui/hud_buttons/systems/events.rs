@@ -139,9 +139,14 @@ pub(crate) fn handle_get_market_clicked( mut commands: Commands,
             error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
             return;
         }
-
+        
         let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
         let found_waypoint = found_waypoints.get(0).unwrap();
+        
+        if !found_waypoint.has_marketplace() {
+            error_text.single_mut().sections[0].value = "Error: Waypoint has no marketplace".to_string();
+            return;            
+        }
 
         let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
         match market_details {

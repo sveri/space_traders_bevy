@@ -9,11 +9,14 @@ pub(crate) fn init_market_overview(mut commands: Commands) {
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    top: Val::Px(600.0),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
+                    top: Val::Px(0.0),
                     left: Val::Px(0.0),
                     ..default()
                 },
                 visibility: Visibility::Visible,
+                background_color: BackgroundColor(Color::BLACK),
                 ..default()
             },
             MarketMarker,

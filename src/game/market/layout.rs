@@ -17,6 +17,7 @@ pub(crate) fn init_market_overview(mut commands: Commands) {
                 focus_policy: FocusPolicy::Block,
                 visibility: Visibility::Visible,
                 background_color: BackgroundColor(Color::BLACK),
+                z_index: ZIndex::Global(10),
                 ..default()
             },
             MarketMarker,

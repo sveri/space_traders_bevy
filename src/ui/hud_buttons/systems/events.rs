@@ -10,6 +10,7 @@ use crate::game::components::Market;
 use crate::game::ship::components::FlightMode;
 use crate::game::ship::components::FlightStatus;
 use crate::game::ship::components::Nav;
+use crate::game::ship::components::NavWrapper;
 use crate::game::ship::components::Ship;
 use crate::game::ship::systems::events::ShipSelected;
 use crate::game::waypoint;
@@ -48,11 +49,6 @@ pub(crate) struct GetMarketClicked;
 
 impl From<ListenerInput<Pointer<Click>>> for GetMarketClicked {
     fn from(_click_event: ListenerInput<Pointer<Click>>) -> Self { GetMarketClicked }
-}
-
-#[derive(Deserialize, Clone, Debug)]
-struct NavWrapper {
-    nav: Nav,
 }
 
 pub(crate) fn handle_orbit_clicked_event(
@@ -110,19 +106,19 @@ pub(crate) fn handle_move_ship(
     mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
     if let (Ok(waypoint), Ok(selected_ship)) = (selected_waypoint.get_single(), selected_ship_query.get_single()) {
-        let res = st_client::move_ship(selected_ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());
-        match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
-            Ok(nav_details) => {
+        let nav = st_client::move_ship(selected_ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());
+        match nav {
+            Ok(nav) => {
                 for (ship_entity, mut ship) in ships.iter_mut() {
                     if ship.symbol == selected_ship.ship.symbol {
-                        ship.nav = nav_details.data.nav.clone();
+                        ship.nav = nav.clone();
                         ship_selected_event.send(ShipSelected(ship_entity));
                         break;
                     }
                 }
             }
             Err(e) => {
-                panic!("Error reading navigation data when moving ship: {e}");
+                error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
             }
         }
     } else {

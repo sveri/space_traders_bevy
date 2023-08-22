@@ -48,6 +48,12 @@ impl Ship {
 
 }
 
+
+#[derive(Deserialize, Clone, Debug)]
+pub(crate) struct NavWrapper {
+    pub(crate) nav: Nav,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 
 pub(crate) struct Nav {

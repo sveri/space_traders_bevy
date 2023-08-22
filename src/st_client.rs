@@ -1,19 +1,38 @@
 use std::{env, fmt::Display};
 
 use anyhow::{anyhow, Context, Result};
-use reqwest::blocking::{RequestBuilder, Response};
+use reqwest::{
+    blocking::{RequestBuilder, Response},
+    StatusCode,
+};
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::game::{components::Market, waypoint::components::Waypoints};
+use crate::game::{
+    components::Market,
+    ship::components::{Nav, NavWrapper},
+    waypoint::components::Waypoints,
+};
 
 #[derive(thiserror::Error, Debug)]
 enum SpaceTradersApiError {
     #[error("Unwrapping json failed: {0}")]
     JsonUnwrapError(#[from] serde_json::Error),
+    #[error("Bad Request: {0}")]
+    BadRequestError(String),
     // JsonUnwrapError(String),
 }
 
+#[derive(Debug, Deserialize)]
+pub(crate) struct BadRequestResponse {
+    pub(crate) error: BadRequestErrorError,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct BadRequestErrorError {
+    pub(crate) message: String,
+    pub(crate) code: i32,
+}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct GenericResponse<T> {
@@ -50,7 +69,8 @@ pub(crate) fn fetch_agent_details() -> AgentDetails {
 }
 
 pub(crate) fn fetch_waypoints(system_symbol: &str) -> Result<Waypoints> {
-    let resp: Waypoints = send_get_with_response_type(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str())?;
+    let resp: Waypoints =
+        send_get_with_response_type(format!("https://api.spacetraders.io/v2/systems/{}/waypoints", system_symbol).as_str())?;
     Ok(resp)
 }
 
@@ -64,15 +84,20 @@ pub(crate) fn dock_ship(ship_symbol: &str) -> String {
     resp
 }
 
-pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> String {
+pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> Result<Nav> {
     let navigate = Navigate {
         waypoint_symbol: target_waypoint,
     };
-    let resp = send_post(
+    match send_post_with_error(
         format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship_symbol).as_str(),
         serde_json::to_string(&navigate).unwrap(),
-    );
-    resp
+    ) {
+        Ok(resp) => {
+            let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp).unwrap();
+            Ok(nav_wrapper.data.nav)
+        }
+        Err(err) => Err(err),
+    }
 }
 
 pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
@@ -99,6 +124,22 @@ pub(crate) fn send_post(url: &str, body: String) -> String {
     let client = reqwest::blocking::Client::new();
     match send_with_header(client.post(url).body(body)) {
         Ok(resp) => resp.text().unwrap(),
+        Err(err) => panic!("Error: {}", err),
+    }
+}
+
+pub(crate) fn send_post_with_error(url: &str, body: String) -> Result<String> {
+    let client = reqwest::blocking::Client::new();
+    match send_with_header(client.post(url).body(body)) {
+        Ok(resp) => {
+            if &resp.status() == &StatusCode::BAD_REQUEST {
+                let bad_request_response: BadRequestResponse = serde_json::from_str(&resp.text().unwrap()).unwrap();
+                println!("Error: {}", &bad_request_response.error.message);
+                Err(anyhow!(SpaceTradersApiError::BadRequestError(bad_request_response.error.message)))
+            } else {
+                Ok(resp.text().unwrap())
+            }
+        }
         Err(err) => panic!("Error: {}", err),
     }
 }

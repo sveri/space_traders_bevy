@@ -6,6 +6,7 @@ use bevy_mod_picking::prelude::Pointer;
 use serde::Deserialize;
 // use bevy::prelude::Eve
 
+use crate::game::components::Market;
 use crate::game::ship::components::FlightMode;
 use crate::game::ship::components::FlightStatus;
 use crate::game::ship::components::Nav;
@@ -131,7 +132,7 @@ pub(crate) fn handle_move_ship(
 
 pub(crate) fn handle_get_market_clicked( mut commands: Commands,
     selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    waypoint_query: Query<&Waypoint>,
+    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>,
 ) {
     if let Ok(selected_ship) = selected_ship_query.get_single() {
 
@@ -151,6 +152,12 @@ pub(crate) fn handle_get_market_clicked( mut commands: Commands,
         let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
         match market_details {
             Ok(market_data) => {
+                for (existing_market_entity, existing_market) in existing_markets_query.iter() {
+                    if existing_market.symbol == market_data.symbol {
+                        commands.entity(existing_market_entity).despawn_recursive();
+                        break;
+                    }
+                }
                 println!("market data: {:?}", market_data);
                 commands.spawn(market_data);
             }

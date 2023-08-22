@@ -1,15 +1,21 @@
 use bevy::prelude::*;
 
+use crate::game::components::Market;
+
 use super::components::MarketMarker;
 
 
-pub(crate) fn show_hide_market(mut commands: Commands, mut node_bundle_query: Query<(&mut Visibility, &ComputedVisibility), With<MarketMarker>>) {
+pub(crate) fn show_hide_market(mut commands: Commands, mut node_bundle_query: Query<(&mut Visibility, &ComputedVisibility), With<MarketMarker>>, markets_query: Query<&Market>) {
     
     let (mut visibility, computed_visibility)= node_bundle_query.get_single_mut().unwrap();
     if computed_visibility.is_visible() {
         *visibility = Visibility::Hidden;
     } else {
         *visibility = Visibility::Visible;
+    }
+
+    for market in markets_query.iter() {
+        dbg!(&market.symbol);
     }
     
 

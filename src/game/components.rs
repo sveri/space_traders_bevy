@@ -6,7 +6,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct Market {
-    symbol: String,
+    pub(crate) symbol: String,
     imports: Vec<ImportExport>,
     exports: Vec<ImportExport>,
     transactions: Vec<Transaction>,
@@ -44,7 +44,7 @@ pub(crate) struct Transaction {
 #[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct TradeGood {
-    pub(crate) symbolsdf: String,
+    pub(crate) symbol: String,
     #[serde(alias = "tradeVolume")]
     pub(crate) trade_volume: i32,
     pub(crate) supply: String,

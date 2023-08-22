@@ -1,8 +1,11 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
-use crate::game::market::components::MarketMarker;
+use crate::game::{market::components::MarketMarker, components::Market};
 
-pub(crate) fn init_market_overview(mut commands: Commands) {
+pub(crate) fn init_market_overview(mut commands: Commands, markets_query: Query<&Market>) {
+    for market in markets_query.iter() {
+        dbg!(market);
+    }
     commands
         .spawn((
             NodeBundle {
@@ -15,7 +18,7 @@ pub(crate) fn init_market_overview(mut commands: Commands) {
                     ..default()
                 },
                 focus_policy: FocusPolicy::Block,
-                visibility: Visibility::Visible,
+                visibility: Visibility::Hidden,
                 background_color: BackgroundColor(Color::BLACK),
                 z_index: ZIndex::Global(10),
                 ..default()

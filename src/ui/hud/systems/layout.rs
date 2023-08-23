@@ -11,11 +11,12 @@ pub(crate) fn show_agent_details(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
             format!(
-                "{}, Faction: {} HQs: {}, HQ system symbol: {}",
+                "{}, Faction: {} HQs: {}, HQ system symbol: {}, Credits: {}",
                 agent_details.symbol,
                 agent_details.starting_faction,
                 agent_details.headquarters,
-                agent_details.get_headquarter_system_symbol()
+                agent_details.get_headquarter_system_symbol(),
+                agent_details.credits
             ),
             TextStyle {
                 font_size: 15.0,

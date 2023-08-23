@@ -93,7 +93,7 @@ pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> Result<Na
         serde_json::to_string(&navigate).unwrap(),
     ) {
         Ok(resp) => {
-            let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp).unwrap();
+            let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
             Ok(nav_wrapper.data.nav)
         }
         Err(err) => Err(err),

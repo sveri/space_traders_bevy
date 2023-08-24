@@ -17,7 +17,7 @@ pub(crate) fn show_hide_market(
         return;
     }
 
-    let column_headlines = ["Market", "Exports", "Imports", "tradeGoods"];
+    let column_headlines = ["Market", "Trade Goods", "Exports", "Imports"];
 
     let text_style = TextStyle {
         // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
@@ -26,7 +26,7 @@ pub(crate) fn show_hide_market(
         ..default()
     };
     commands
-        .spawn(NodeBundle {
+        .spawn((NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
                 width: Val::Percent(100.),
@@ -37,7 +37,7 @@ pub(crate) fn show_hide_market(
             },
             background_color: Color::BLACK.into(),
             ..Default::default()
-        })
+        }, MarketMarker))
         .with_children(|parent| {
             parent
                 .spawn(NodeBundle {
@@ -97,6 +97,19 @@ pub(crate) fn show_hide_market(
                                     text: Text::from_section(&market.symbol, text_style.clone()),
                                     ..Default::default()
                                 });
+
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        market.display_trade_goods(),
+                                        TextStyle {
+                                            // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                            font_size: 15.0,
+                                            color: Color::rgb(0.9, 0.9, 0.9),
+                                            ..default()
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
                                 parent.spawn(TextBundle {
                                     text: Text::from_section(
                                         market.display_exports(),
@@ -112,18 +125,6 @@ pub(crate) fn show_hide_market(
                                 parent.spawn(TextBundle {
                                     text: Text::from_section(
                                         market.display_imports(),
-                                        TextStyle {
-                                            // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                                            font_size: 15.0,
-                                            color: Color::rgb(0.9, 0.9, 0.9),
-                                            ..default()
-                                        },
-                                    ),
-                                    ..Default::default()
-                                });
-                                parent.spawn(TextBundle {
-                                    text: Text::from_section(
-                                        market.display_trade_goods(),
                                         TextStyle {
                                             // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                                             font_size: 15.0,

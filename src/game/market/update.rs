@@ -17,13 +17,14 @@ pub(crate) fn show_hide_market(
         return;
     }
 
+    let column_headlines = ["Market", "Exports", "Imports", "tradeGoods"];
+
     let text_style = TextStyle {
         // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 40.0,
         color: Color::rgb(0.9, 0.9, 0.9),
         ..default()
     };
-
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -41,41 +42,163 @@ pub(crate) fn show_hide_market(
             parent
                 .spawn(NodeBundle {
                     style: Style {
+                        flex_direction: FlexDirection::Row,
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }).with_children(|parent| {
+
+
+                    parent
+                .spawn(NodeBundle {
+                    style: Style {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
                         ..Default::default()
                     },
                     ..Default::default()
+                });
+
+                    parent.spawn(TextBundle {
+                        text: Text::from_section("123".to_string(), text_style.clone()),
+                        ..Default::default()
+                    });
+                    parent.spawn(TextBundle {
+                        text: Text::from_section("123".to_string(), text_style.clone()),
+                        ..Default::default()
+                    });
+                });
+
+});
+
+    // commands
+    //     .spawn(NodeBundle {
+    //         style: Style {
+    //             position_type: PositionType::Absolute,
+    //             width: Val::Percent(100.),
+    //             height: Val::Percent(100.),
+    //             justify_content: JustifyContent::Center,
+    //             align_items: AlignItems::Center,
+    //             ..Default::default()
+    //         },
+    //         background_color: Color::BLACK.into(),
+    //         ..Default::default()
+    //     })
+    //     .with_children(|parent| {
+    //         parent
+    //             .spawn(NodeBundle {
+    //                 style: Style {
+    //                     flex_direction: FlexDirection::Column,
+    //                     align_items: AlignItems::Center,
+    //                     justify_content: JustifyContent::Center,
+    //                     ..Default::default()
+    //                 },
+    //                 ..Default::default()
+    //             })
+    //             .with_children(|parent| {
+
+    //                 parent
+    //                     .spawn(NodeBundle {
+    //                         style: Style {
+    //                             flex_direction: FlexDirection::Column,
+    //                             align_items: AlignItems::Stretch,
+    //                             padding: UiRect::all(Val::Px(10.)),
+    //                             margin: UiRect::top(Val::Px(50.)),
+    //                             ..Default::default()
+    //                         },
+    //                         background_color: Color::YELLOW.into(),
+    //                         ..Default::default()
+    //                     })
+    //                     .with_children(|parent| {
+    //                         for title in column_headlines {
+    //                             spawn_headline_row(parent, title, text_style.clone());
+    //                         }
+    //                         // for title in column_headlines {
+    //                         //     spawn_button_row(parent, constaint, text_style.clone(), &markets_query);
+    //                         // }
+    //                     });
+
+    //                 parent.spawn(TextBundle::from_section("Size Constraints Example", text_style.clone()).with_style(Style {
+    //                     margin: UiRect::bottom(Val::Px(25.)),
+    //                     ..Default::default()
+    //                 }));
+    //                 parent.spawn(TextBundle::from_section("Size Constraints Example", text_style.clone()).with_style(Style {
+    //                     margin: UiRect::bottom(Val::Px(25.)),
+    //                     ..Default::default()
+    //                 }));
+
+    //                 // spawn_bar(parent);
+    //             });
+    //     });
+}
+
+
+fn spawn_headline_row(parent: &mut ChildBuilder, title: &str, text_style: TextStyle) {
+    let label = "label".to_string();
+
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                padding: UiRect::all(Val::Px(2.)),
+                align_items: AlignItems::Stretch,
+                ..Default::default()
+            },
+            background_color: Color::BLACK.into(),
+            ..Default::default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        justify_content: JustifyContent::End,
+                        padding: UiRect::all(Val::Px(2.)),
+                        ..Default::default()
+                    },
+                    //background_color: Color::RED.into(),
+                    ..Default::default()
                 })
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section("Size Constraints Example", text_style.clone()).with_style(Style {
-                        margin: UiRect::bottom(Val::Px(25.)),
-                        ..Default::default()
-                    }));
-                    parent.spawn(TextBundle::from_section("Size Constraints Example", text_style.clone()).with_style(Style {
-                        margin: UiRect::bottom(Val::Px(25.)),
-                        ..Default::default()
-                    }));
-
-                    // spawn_bar(parent);
-
+                    // spawn row label
                     parent
                         .spawn(NodeBundle {
                             style: Style {
-                                flex_direction: FlexDirection::Column,
-                                align_items: AlignItems::Stretch,
-                                padding: UiRect::all(Val::Px(10.)),
-                                margin: UiRect::top(Val::Px(50.)),
+                                min_width: Val::Px(200.),
+                                max_width: Val::Px(200.),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
                                 ..Default::default()
                             },
-                            background_color: Color::YELLOW.into(),
                             ..Default::default()
                         })
                         .with_children(|parent| {
-                            for constaint in ["1", "", "3"] {
-                                spawn_button_row(parent, constaint, text_style.clone(), &markets_query);
-                            }
+                            parent.spawn(TextBundle {
+                                text: Text::from_section(title.to_string(), text_style.clone()),
+                                ..Default::default()
+                            });
+                        });
+
+                    // spawn row buttons
+                    parent
+                        .spawn(NodeBundle {
+                            // background_color: Color::DARK_GREEN.into(),
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            // for market in markets_query.iter() {
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        // market.symbol.clone(),
+                                        "sldkjf".to_string(),
+                                        text_style.clone(),
+                                    ),
+                                    ..Default::default()
+                                });
+                            // }
                         });
                 });
         });

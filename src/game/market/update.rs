@@ -42,37 +42,102 @@ pub(crate) fn show_hide_market(
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }).with_children(|parent| {
-
-
-                    parent
-                .spawn(NodeBundle {
-                    style: Style {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
                         ..Default::default()
                     },
                     ..Default::default()
-                });
+                })
+                .with_children(|parent| {
+                    // parent.spawn(NodeBundle {
+                    //     style: Style {
+                    //         flex_direction: FlexDirection::Column,
+                    //         align_items: AlignItems::Center,
+                    //         justify_content: JustifyContent::Center,
+                    //         ..Default::default()
+                    //     },
+                    //     ..Default::default()
+                    // });
 
-                    parent.spawn(TextBundle {
-                        text: Text::from_section("123".to_string(), text_style.clone()),
-                        ..Default::default()
-                    });
-                    parent.spawn(TextBundle {
-                        text: Text::from_section("123".to_string(), text_style.clone()),
-                        ..Default::default()
-                    });
-                });
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Row,
+                                align_items: AlignItems::Center,
+                                justify_content: JustifyContent::Center,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            for headline in column_headlines {
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(headline, text_style.clone()),
+                                    ..Default::default()
+                                });
+                            }
+                        });
 
-});
+                    for market in markets_query.iter() {
+                        dbg!(&market.symbol);
+                        parent
+                            .spawn(NodeBundle {
+                                style: Style {
+                                    flex_direction: FlexDirection::Row,
+                                    align_items: AlignItems::Center,
+                                    justify_content: JustifyContent::Center,
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            })
+                            .with_children(|parent| {
+                                // for headline in column_headlines {
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(&market.symbol, text_style.clone()),
+                                    ..Default::default()
+                                });
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        market.display_exports(),
+                                        TextStyle {
+                                            // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                            font_size: 15.0,
+                                            color: Color::rgb(0.9, 0.9, 0.9),
+                                            ..default()
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        market.display_imports(),
+                                        TextStyle {
+                                            // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                            font_size: 15.0,
+                                            color: Color::rgb(0.9, 0.9, 0.9),
+                                            ..default()
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
+                                parent.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        market.display_trade_goods(),
+                                        TextStyle {
+                                            // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                            font_size: 15.0,
+                                            color: Color::rgb(0.9, 0.9, 0.9),
+                                            ..default()
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
+                                // }
+                            });
+                    }
+                });
+        });
 
     // commands
     //     .spawn(NodeBundle {
@@ -135,7 +200,6 @@ pub(crate) fn show_hide_market(
     //     });
 }
 
-
 fn spawn_headline_row(parent: &mut ChildBuilder, title: &str, text_style: TextStyle) {
     let label = "label".to_string();
 
@@ -190,14 +254,14 @@ fn spawn_headline_row(parent: &mut ChildBuilder, title: &str, text_style: TextSt
                         })
                         .with_children(|parent| {
                             // for market in markets_query.iter() {
-                                parent.spawn(TextBundle {
-                                    text: Text::from_section(
-                                        // market.symbol.clone(),
-                                        "sldkjf".to_string(),
-                                        text_style.clone(),
-                                    ),
-                                    ..Default::default()
-                                });
+                            parent.spawn(TextBundle {
+                                text: Text::from_section(
+                                    // market.symbol.clone(),
+                                    "sldkjf".to_string(),
+                                    text_style.clone(),
+                                ),
+                                ..Default::default()
+                            });
                             // }
                         });
                 });

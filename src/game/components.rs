@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt::Display;
+
 use bevy::{prelude::{Component, ReflectComponent}, reflect::Reflect};
 use serde::Deserialize;
 
@@ -14,12 +16,42 @@ pub(crate) struct Market {
     trade_goods: Vec<TradeGood>,
 }
 
+impl Market {
+    pub(crate) fn display_exports(&self) -> String {
+        let mut exports = String::new();
+        for export in &self.exports {
+            exports.push_str(&format!("{}\n", export));
+        }
+        exports
+    }
+    pub(crate) fn display_imports(&self) -> String {
+        let mut exports = String::new();
+        for export in &self.imports {
+            exports.push_str(&format!("{}\n", export));
+        }
+        exports
+    }
+    pub(crate) fn display_trade_goods(&self) -> String {
+        let mut exports = String::new();
+        for export in &self.trade_goods {
+            exports.push_str(&format!("{}\n", export));
+        }
+        exports
+    }
+}
+
 #[derive(Deserialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct ImportExport {
     pub(crate) symbol: String,
     pub(crate) name: String,
     pub(crate) description: String,
+}
+
+impl Display for ImportExport {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 #[derive(Deserialize, Reflect, Component, Default, Debug)]
@@ -52,4 +84,10 @@ pub(crate) struct TradeGood {
     pub(crate) purchase_price: f32,
     #[serde(alias = "sellPrice")]
     pub(crate) sell_price: f32,
+}
+
+impl Display for TradeGood {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}, {} / {}", self.symbol, self.purchase_price, self.sell_price)
+    }
 }

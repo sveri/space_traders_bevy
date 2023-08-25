@@ -62,6 +62,17 @@ pub(in crate::ui::hud_buttons) fn setup_buttons(mut commands: Commands) {
                 .with_children(|parent| {
                     parent.spawn(text_bundle("Get Market"));
                 });
+        })
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    button_bundle(130., 20.),
+                    AutoTradeButton,
+                    On::<Pointer<Click>>::send_event::<AutoTradecClicked>(),
+                ))
+                .with_children(|parent| {
+                    parent.spawn(text_bundle("Autotrade"));
+                });
         });
 }
 

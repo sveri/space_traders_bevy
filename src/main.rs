@@ -72,7 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     App::new()
-        // .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(WinitSettings::desktop_app())
         .add_plugins((
             DefaultPlugins
                 .set(LogPlugin {

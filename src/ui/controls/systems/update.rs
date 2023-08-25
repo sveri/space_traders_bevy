@@ -2,9 +2,6 @@ use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
 };
-use serde::__private::de;
-
-use crate::game::market::layout::init_market_overview;
 
 pub(crate) fn player_camera_control(
     mut mouse_wheel_events: EventReader<MouseWheel>, time: Res<Time>, mut query: Query<&mut OrthographicProjection, With<Camera>>,

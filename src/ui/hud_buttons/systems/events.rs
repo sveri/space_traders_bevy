@@ -13,6 +13,7 @@ use crate::game::ship::components::Nav;
 use crate::game::ship::components::NavWrapper;
 use crate::game::ship::components::Ship;
 use crate::game::ship::systems::events::ShipSelected;
+use crate::game::ship::systems::startup::ShipStateMachine;
 use crate::game::waypoint;
 use crate::game::waypoint::components::Waypoint;
 use crate::st_client;
@@ -49,6 +50,13 @@ pub(crate) struct GetMarketClicked;
 
 impl From<ListenerInput<Pointer<Click>>> for GetMarketClicked {
     fn from(_click_event: ListenerInput<Pointer<Click>>) -> Self { GetMarketClicked }
+}
+
+#[derive(Event, Component, Debug)]
+pub(crate) struct AutoTradeClicked;
+
+impl From<ListenerInput<Pointer<Click>>> for AutoTradeClicked {
+    fn from(_click_event: ListenerInput<Pointer<Click>>) -> Self { AutoTradeClicked }
 }
 
 pub(crate) fn handle_orbit_clicked_event(
@@ -126,23 +134,25 @@ pub(crate) fn handle_move_ship(
     }
 }
 
-pub(crate) fn handle_get_market_clicked( mut commands: Commands,
-    selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
+pub(crate) fn handle_get_market_clicked(
+    mut commands: Commands, selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
     waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>,
 ) {
     if let Ok(selected_ship) = selected_ship_query.get_single() {
-
         if selected_ship.ship.nav.status == FlightStatus::IN_TRANSIT {
             error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
             return;
         }
-        
-        let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
+
+        let found_waypoints = waypoint_query
+            .iter()
+            .filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol)
+            .collect::<Vec<&Waypoint>>();
         let found_waypoint = found_waypoints.get(0).unwrap();
-        
+
         if !found_waypoint.has_marketplace() {
             error_text.single_mut().sections[0].value = "Error: Waypoint has no marketplace".to_string();
-            return;            
+            return;
         }
 
         let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
@@ -160,6 +170,20 @@ pub(crate) fn handle_get_market_clicked( mut commands: Commands,
             Err(e) => {
                 println!("{e}");
                 error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
+            }
+        }
+    } else {
+        error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
+    }
+}
+// pub(crate) fn handle_autotrade_clicked<T: std::marker::Send + std::marker::Sync + 'static>(
+pub(crate) fn handle_autotrade_clicked<T: Component>(
+    selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &mut Ship, &ShipStateMachine<T>)>,
+) {
+    if let Ok(selected_ship) = selected_ship_query.get_single() {
+
+        for (ship_entity, mut ship, state_machine) in ships.iter_mut() {
+            if ship.symbol == selected_ship.ship.symbol {
             }
         }
     } else {

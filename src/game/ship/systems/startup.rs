@@ -6,6 +6,25 @@ use crate::game::ship::client::fetch_my_ships;
 use super::events::ShipSelected;
 
 
+#[derive(Component)]
+struct StateIdle {
+
+}
+
+#[derive(Component)]
+pub(crate) struct ShipStateMachine<S: Component> {
+    state: S,
+}
+
+impl ShipStateMachine<StateIdle> {
+    fn new() -> Self {
+        ShipStateMachine {
+            state: StateIdle {}
+        }
+    }
+}
+
+
 pub(crate) fn add_ships(mut commands: Commands) {
     let ships = fetch_my_ships();
     ships.iter().for_each(|ship| {
@@ -20,6 +39,7 @@ pub(crate) fn add_ships(mut commands: Commands) {
                 transform: ship.get_transform(),
                 ..default()
             },
+            ShipStateMachine::new(),
             PickableBundle::default(),
             RaycastPickTarget::default(),
             On::<Pointer<Click>>::send_event::<ShipSelected>(),

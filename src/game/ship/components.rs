@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#![allow(clippy::upper_case_acronyms)]
+#![allow(non_camel_case_types)]
 
 use std::fmt::Display;
 

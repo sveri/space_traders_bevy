@@ -12,3 +12,6 @@ pub(crate) struct DockButton;
 
 #[derive(Component)]
 pub(crate) struct GetMarketButton;
+
+#[derive(Component)]
+pub(crate) struct AutoTradeButton;

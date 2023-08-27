@@ -3,9 +3,9 @@
 use std::fmt::Display;
 
 use bevy::{prelude::{Component, ReflectComponent}, reflect::Reflect};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct Market {
     pub(crate) symbol: String,
@@ -13,7 +13,7 @@ pub(crate) struct Market {
     exports: Vec<ImportExport>,
     transactions: Vec<Transaction>,
     #[serde(alias = "tradeGoods")]
-    trade_goods: Vec<TradeGood>,
+    pub(crate) trade_goods: Vec<TradeGood>,
 }
 
 impl Market {
@@ -38,9 +38,13 @@ impl Market {
         }
         exports
     }
+
+    // pub(crate) fn get_trade_goods(&self) -> Vec<TradeGood> {
+    //     self.trade_goods.cl
+    // }
 }
 
-#[derive(Deserialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct ImportExport {
     pub(crate) symbol: String,
@@ -54,7 +58,7 @@ impl Display for ImportExport {
     }
 }
 
-#[derive(Deserialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct Transaction {
     #[serde(alias = "waypointSymbol")]
@@ -73,7 +77,7 @@ pub(crate) struct Transaction {
     pub(crate) timestamp: String,
 }
 
-#[derive(Deserialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
 #[reflect(Component)]
 pub(crate) struct TradeGood {
     pub(crate) symbol: String,
@@ -85,6 +89,10 @@ pub(crate) struct TradeGood {
     #[serde(alias = "sellPrice")]
     pub(crate) sell_price: f32,
 }
+
+// impl TradeGood {
+//     pub(crate) get_margin
+// }
 
 impl Display for TradeGood {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

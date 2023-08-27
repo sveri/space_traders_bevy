@@ -1,28 +1,28 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{PickableBundle, prelude::{RaycastPickTarget, Pointer, On, Click}};
 
-use crate::game::ship::client::fetch_my_ships;
+use crate::game::ship::{client::fetch_my_ships, components::ShipState};
 
 use super::events::ShipSelected;
 
 
-#[derive(Component)]
-struct StateIdle {
+// #[derive(Component)]
+// struct StateIdle {
 
-}
+// }
 
-#[derive(Component)]
-pub(crate) struct ShipStateMachine<S: Component> {
-    state: S,
-}
+// #[derive(Component)]
+// pub(crate) struct ShipStateMachine<S: Component> {
+//     state: S,
+// }
 
-impl ShipStateMachine<StateIdle> {
-    fn new() -> Self {
-        ShipStateMachine {
-            state: StateIdle {}
-        }
-    }
-}
+// impl ShipStateMachine<StateIdle> {
+//     fn new() -> Self {
+//         ShipStateMachine {
+//             state: StateIdle {}
+//         }
+//     }
+// }
 
 
 pub(crate) fn add_ships(mut commands: Commands) {
@@ -39,7 +39,8 @@ pub(crate) fn add_ships(mut commands: Commands) {
                 transform: ship.get_transform(),
                 ..default()
             },
-            ShipStateMachine::new(),
+            // ShipStateMachine::new(),
+            ShipState::new(),
             PickableBundle::default(),
             RaycastPickTarget::default(),
             On::<Pointer<Click>>::send_event::<ShipSelected>(),

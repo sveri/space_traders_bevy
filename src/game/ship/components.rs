@@ -9,6 +9,72 @@ use serde::Deserialize;
 use chrono::{DateTime, Utc};
 
 
+// #[derive(Debug, Deserialize, Component, Clone)]
+// pub(crate) struct ShipWrapper {
+//     ship: Ship,
+//     state: String
+// }
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum ShipStateEnum {
+    Idle,
+    Purchase,
+    Sell,
+    Autotrade,
+}
+
+#[derive(Debug, Component, Clone)]
+pub(crate) struct ShipState {
+    pub(crate) state: ShipStateEnum,
+    pub(crate) item_to_purchase: Option<String>,
+    pub(crate) to_purchase_waypoint: Option<String>,
+    pub(crate) item_to_sell: Option<String>,
+    pub(crate) to_sell_waypoint: Option<String>,
+}
+
+impl ShipState {
+    pub(crate) fn new() -> Self {
+        ShipState {
+            state: ShipStateEnum::Idle,
+            item_to_purchase: None,
+            to_purchase_waypoint: None,
+            item_to_sell: None,
+            to_sell_waypoint: None,
+        }
+    }
+
+    pub(crate) fn is_idle(&self) -> bool {
+        self.state == ShipStateEnum::Idle
+    }
+
+    pub(crate) fn has_to_find_new_item_to_purchase(&self) -> bool {
+        if self.item_to_purchase.is_none() || self.item_to_sell.is_none(){
+            return true;
+        }
+        false
+    }
+
+    pub(crate) fn has_to_dock(&self, ship: &Ship) -> bool {
+        if ship.is_docked() {
+            return false;
+        }
+
+        if let Some(waypoint) = &self.to_purchase_waypoint {
+            if ship.get_current_waypoint() == waypoint.clone(){
+                return true;
+            }
+        }
+        if let Some(waypoint) = &self.to_sell_waypoint {
+            if ship.get_current_waypoint() == waypoint.clone() {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+
+
 pub(crate) type Ships = Vec<Ship>;
 
 #[derive(Debug, Deserialize, Component, Clone)]
@@ -17,6 +83,7 @@ pub(crate) struct Ship {
     pub(crate) crew: Crew,
     pub(crate) fuel: Fuel,
     pub(crate) nav: Nav,
+    pub(crate) cargo: Cargo,
 }
 
 impl Ship {
@@ -46,6 +113,26 @@ impl Ship {
 
     pub (crate) fn get_transform(&self) -> Transform {
         Transform::from_translation(self.get_position())
+    }
+
+    pub(crate) fn is_in_transit(&self) -> bool {
+        self.nav.status == FlightStatus::IN_TRANSIT
+    }
+
+    pub(crate) fn has_cargo(&self) -> bool {
+        self.cargo.units > 0
+    }
+
+    pub(crate) fn is_in_orbit(&self) -> bool {
+        self.nav.status == FlightStatus::IN_ORBIT
+    }
+
+    pub(crate) fn is_docked(&self) -> bool {
+        self.nav.status == FlightStatus::DOCKED
+    }
+
+    pub(crate) fn get_current_waypoint(&self) -> String {
+        self.nav.waypoint_symbol.clone()
     }
 
 }

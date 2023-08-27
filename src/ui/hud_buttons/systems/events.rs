@@ -3,18 +3,15 @@ use bevy::text::Text;
 use bevy_eventlistener::callbacks::ListenerInput;
 use bevy_mod_picking::prelude::Click;
 use bevy_mod_picking::prelude::Pointer;
-use serde::Deserialize;
 // use bevy::prelude::Eve
 
 use crate::game::components::Market;
-use crate::game::ship::components::FlightMode;
 use crate::game::ship::components::FlightStatus;
-use crate::game::ship::components::Nav;
 use crate::game::ship::components::NavWrapper;
 use crate::game::ship::components::Ship;
+use crate::game::ship::components::ShipState;
+use crate::game::ship::components::ShipStateEnum;
 use crate::game::ship::systems::events::ShipSelected;
-use crate::game::ship::systems::startup::ShipStateMachine;
-use crate::game::waypoint;
 use crate::game::waypoint::components::Waypoint;
 use crate::st_client;
 use crate::st_client::GenericResponse;
@@ -164,7 +161,7 @@ pub(crate) fn handle_get_market_clicked(
                         break;
                     }
                 }
-                println!("market data: {:?}", market_data);
+                println!("market data: {}", serde_json::to_string_pretty(&market_data).unwrap());
                 commands.spawn(market_data);
             }
             Err(e) => {
@@ -177,13 +174,21 @@ pub(crate) fn handle_get_market_clicked(
     }
 }
 // pub(crate) fn handle_autotrade_clicked<T: std::marker::Send + std::marker::Sync + 'static>(
-pub(crate) fn handle_autotrade_clicked<T: Component>(
-    selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &mut Ship, &ShipStateMachine<T>)>,
+pub(crate) fn handle_autotrade_clicked(
+    selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &Ship, &mut ShipState)>,
 ) {
     if let Ok(selected_ship) = selected_ship_query.get_single() {
 
-        for (ship_entity, mut ship, state_machine) in ships.iter_mut() {
+        for (_, ship, mut state) in ships.iter_mut() {
             if ship.symbol == selected_ship.ship.symbol {
+                if state.is_idle() {
+                    state.state = ShipStateEnum::Autotrade;
+                } else {
+                    state.state = ShipStateEnum::Idle;
+                }
+                dbg!(&state);
+                
+                break;
             }
         }
     } else {

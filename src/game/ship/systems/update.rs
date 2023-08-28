@@ -32,55 +32,187 @@ pub(crate) fn update_ships(mut ships: Query<(&mut Transform, &Ship, &ShipState)>
     }
 }
 
-fn find_new_item_to_purchase(markets: Vec<Market>) -> (String, String, String) {
-    let mut max_price_difference = 0.;
-    let mut item = String::new();
-    let mut purchase_waypoint = String::new();
-    let mut sell_waypoint = String::new();
-    // let price_map = HashMap::new();
-    for market in markets.iter() {
-        let mut tmp_max_price_difference = 0.;
-        let mut tmp_item = String::new();
-        let mut tmp_purchase_waypoint = String::new();
-        let mut tmp_sell_waypoint = String::new();
-        market.trade_goods.iter().for_each(|trade_good| {
-            let mut lowest_purchase = trade_good.purchase_price;
-            let mut highest_sell = trade_good.sell_price;
-            tmp_item = trade_good.symbol.clone();
+#[derive(Debug)]
+struct PriceWaypoint {
+    pub(crate) price: f32,
+    pub(crate) waypoint: String,
+}
 
-            for inner_market in markets.iter() {
-                inner_market.trade_goods.iter().for_each(|inner_trade_good| {
-                    if inner_trade_good.purchase_price < lowest_purchase {
-                        lowest_purchase = inner_trade_good.purchase_price;
-                        tmp_purchase_waypoint = inner_market.symbol.clone();
-                    }
-                    if inner_trade_good.sell_price > highest_sell {
-                        highest_sell = inner_trade_good.sell_price;
-                        tmp_sell_waypoint = inner_market.symbol.clone();
-                    }
-                });
+fn find_new_item_to_purchase(markets: Vec<Market>) -> (String, String, String, f32) {
+
+  let mut foot_item_to_purchase_price: HashMap<String, PriceWaypoint> = HashMap::new();
+    let mut foot_item_to_sell_price: HashMap<String, PriceWaypoint> = HashMap::new();
+    for market in markets.iter() {
+        market.trade_goods.iter().for_each(|trade_good| {
+            if let Some(existing_purchase) = foot_item_to_purchase_price.get_mut(&trade_good.symbol)
+            {
+                if trade_good.purchase_price < existing_purchase.price {
+                    existing_purchase.price = trade_good.purchase_price;
+                    existing_purchase.waypoint = market.symbol.clone();
+                }
+            } else {
+                foot_item_to_purchase_price.insert(
+                    trade_good.symbol.clone(),
+                    PriceWaypoint {
+                        price: trade_good.purchase_price,
+                        waypoint: trade_good.symbol.clone(),
+                    },
+                );
+            }
+
+            if let Some(existing_purchase) = foot_item_to_sell_price.get_mut(&trade_good.symbol) {
+                if trade_good.sell_price > existing_purchase.price {
+                    existing_purchase.price = trade_good.sell_price;
+                    existing_purchase.waypoint = market.symbol.clone();
+                }
+            } else {
+                foot_item_to_sell_price.insert(
+                    trade_good.symbol.clone(),
+                    PriceWaypoint {
+                        price: trade_good.sell_price,
+                        waypoint: trade_good.symbol.clone(),
+                    },
+                );
             }
         });
     }
 
-    (item, purchase_waypoint, sell_waypoint)
-}
+    dbg!(&foot_item_to_purchase_price);
+    dbg!(&foot_item_to_sell_price);
 
+    let mut biggest_gap = 0.;
+    let mut item = String::new();
+    let mut purchase_waypoint = String::new();
+    let mut sell_waypoint = String::new();
+    let mut purchase_price = 0.;
+
+    for (purchase_key, purchase_value) in &foot_item_to_purchase_price {
+        if foot_item_to_sell_price.contains_key(purchase_key) {
+            let sell_value = &foot_item_to_sell_price.get(purchase_key).unwrap();
+            let tmp_gap = sell_value.price - purchase_value.price;
+            if tmp_gap > biggest_gap {
+                biggest_gap = tmp_gap;
+                item = purchase_key.clone();
+                purchase_waypoint = purchase_value.waypoint.clone();
+                sell_waypoint = sell_value.waypoint.clone();
+                purchase_price = purchase_value.price;
+            }
+        }
+    }
+
+    (item, purchase_waypoint, sell_waypoint, purchase_price)
+}
 
 #[cfg(test)]
 mod tests {
     use crate::game::{components::Market, ship::systems::update::find_new_item_to_purchase};
 
+    #[test]
+    fn simple_test_markets() {
+        let markets = vec![
+            get_simple_market_one(),
+            get_simple_market_two(),
+            get_simple_market_three(),
+        ];
 
+        let res = find_new_item_to_purchase(markets);
+        dbg!(res);
+
+        assert_eq!(2 + 2, 5);
+    }
 
     #[test]
     fn test_markets() {
         let markets = vec![get_market_one(), get_market_two(), get_market_three()];
 
-        find_new_item_to_purchase(markets);
-        
-        
-        assert_eq!(2 + 2, 4);
+        let res = find_new_item_to_purchase(markets);
+        dbg!(res);
+
+        assert_eq!(2 + 2, 5);
+    }
+
+    fn get_simple_market_one() -> Market {
+        serde_json::from_str::<Market>(
+            r#"{
+        "symbol": "X1-QB20-57458X1",
+        "imports": [],
+        "exports": [],
+        "transactions": [],
+        "trade_goods": [
+          {
+            "symbol": "ICE_WATER",
+            "trade_volume": 100,
+            "supply": "MODERATE",
+            "purchase_price": 16.0,
+            "sell_price": 13.0
+          },
+          {
+            "symbol": "FOO_1",
+            "trade_volume": 100,
+            "supply": "MODERATE",
+            "purchase_price": 15.0,
+            "sell_price": 10.0
+          }
+        ]
+      }"#,
+        )
+        .unwrap()
+    }
+
+    fn get_simple_market_two() -> Market {
+        serde_json::from_str::<Market>(
+            r#"{
+        "symbol": "X1-QB20-57458X2",
+        "imports": [],
+        "exports": [],
+        "transactions": [],
+        "trade_goods": [
+          {
+            "symbol": "ICE_WATER",
+            "trade_volume": 100,
+            "supply": "MODERATE",
+            "purchase_price": 22.0,
+            "sell_price": 18.0
+          },
+          {
+            "symbol": "FOO_1",
+            "trade_volume": 100,
+            "supply": "MODERATE",
+            "purchase_price": 3.0,
+            "sell_price": 1.0
+          }
+        ]
+      }"#,
+        )
+        .unwrap()
+    }
+
+    fn get_simple_market_three() -> Market {
+        serde_json::from_str::<Market>(
+            r#"{
+        "symbol": "X1-QB20-57458X3",
+        "imports": [],
+        "exports": [],
+        "transactions": [],
+        "trade_goods": [
+          {
+            "symbol": "ICE_WATER",
+            "trade_volume": 100,
+            "supply": "MODERATE",
+            "purchase_price": 8.0,
+            "sell_price": 2.0
+          },
+          {
+            "symbol": "FOO_1",
+            "trade_volume": 100,
+            "supply": "MODERATE",
+            "purchase_price": 100.0,
+            "sell_price": 80.0
+          }
+        ]
+      }"#,
+        )
+        .unwrap()
     }
 
     fn get_market_three() -> Market {
@@ -252,7 +384,7 @@ mod tests {
           }"#;
         serde_json::from_str::<Market>(market).unwrap()
     }
-    
+
     fn get_market_one() -> Market {
         let market_1 = r#"{
             "symbol": "X1-QB20-61050B",
@@ -354,9 +486,6 @@ mod tests {
             ]
           }"#;
 
-          serde_json::from_str::<Market>(market_1).unwrap()
-        
+        serde_json::from_str::<Market>(market_1).unwrap()
     }
-
-    
 }

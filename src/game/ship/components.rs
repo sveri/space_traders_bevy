@@ -8,6 +8,8 @@ use bevy::prelude::*;
 use serde::Deserialize;
 use chrono::{DateTime, Utc};
 
+use crate::game::components::Transaction;
+
 
 // #[derive(Debug, Deserialize, Component, Clone)]
 // pub(crate) struct ShipWrapper {
@@ -227,4 +229,45 @@ impl std::fmt::Display for Fuel {
 pub(crate) struct Cargo {
     pub(crate) capacity: i32,
     pub(crate) units: i32,
+    inventory: Vec<Inventory>,
+}
+
+impl Cargo {
+    pub(crate) fn get_inventory(&self) -> Vec<Inventory> {
+        self.inventory.clone()
+    }
+    
+    pub(crate) fn set_inventory(&mut self, new_inventory: Vec<Inventory>) {
+        self.inventory = new_inventory.clone();
+    }
+
+    pub(crate) fn add_units(&mut self, units: i32) {
+        self.units += units;
+    }
+
+    pub(crate) fn add_inventory_item(&mut self, item: Inventory) {
+        self.inventory.push(item);
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub(crate) struct Inventory {
+    pub(crate) symbol: String,
+    pub(crate) units: i32,
+}
+
+
+
+
+#[derive(Debug)]
+pub(crate) struct BestItemToTrade {
+    pub(crate) item: String,
+    pub(crate) purchase_waypoint: String,
+    pub(crate) sell_waypoint: String,
+    pub(crate) purchase_price: f32,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub(crate) struct PurchaseSellResponse {
+    pub(crate) transaction: Transaction,
 }

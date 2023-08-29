@@ -5,22 +5,102 @@ use bevy::prelude::*;
 use crate::{
     game::{
         components::Market,
-        ship::components::{Ship, ShipState},
+        ship::components::{BestItemToTrade, Ship, ShipState, Inventory},
     },
     st_client,
+    ui::hud::components::ErrorText,
 };
 
-pub(crate) fn update_ships(mut ships: Query<(&mut Transform, &Ship, &ShipState)>, markets_query: Query<&Market>) {
-    for (mut transform, ship, ship_state) in ships.iter_mut() {
+use super::events::ShipSelected;
+
+pub(crate) fn update_ships(
+    mut ships: Query<(&mut Transform, &mut Ship, &ShipState, Entity)>, markets_query: Query<&Market>,
+    mut ship_selected_event: EventWriter<ShipSelected>, mut error_text: Query<&mut Text, With<ErrorText>>,
+) {
+    for (mut transform, mut ship, ship_state, ship_entity) in ships.iter_mut() {
         transform.translation = ship.get_position();
-        // dbg!(ship_state.state.clone());
+        dbg!(ship_state.state.clone());
 
         if ship_state.is_idle() || ship.is_in_transit() {
+            println!("ship {} is idle or in transit", ship.symbol);
+            return;
+        }
+
+        if ship.cargo.units > 0 {
+            let inventory_list = ship.cargo.get_inventory();
+            let inventory = inventory_list.get(0).unwrap();
+
+            let mut highest_sell_price = 0.;
+            let mut highest_sell_waypoint = String::new();
+
+            for market in markets_query.iter() {
+                for trade_good in market.trade_goods.iter() {
+                    if trade_good.symbol == inventory.symbol && trade_good.sell_price > highest_sell_price {
+                        highest_sell_price = trade_good.sell_price;
+                        highest_sell_waypoint = market.symbol.clone();
+                    }
+                }
+            }
+
+            if highest_sell_waypoint != ship.nav.waypoint_symbol {
+                let nav = st_client::move_ship(&mut ship, highest_sell_waypoint.clone());
+                match nav {
+                    Ok(nav) => {
+                        ship.nav = nav.clone();
+                        ship_selected_event.send(ShipSelected(ship_entity));
+                    }
+                    Err(e) => {
+                        error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
+                    }
+                }
+                println!("moving ship to sell waypoint: {}", highest_sell_waypoint);
+            } else {
+                match st_client::sell_items(&ship, inventory.symbol.clone(), inventory.units) {
+                    Ok(purchase_response) => {
+                        ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
+                        ship.cargo.units -= purchase_response.transaction.units;
+                        println!("sell_response: {:?}", purchase_response);
+                    }
+                    Err(e) => {
+                        error_text.single_mut().sections[0].value = format!("Error: Unable to sell: {e}").to_string();
+                    }
+                }
+            }
+
             return;
         }
 
         if ship_state.has_to_find_new_item_to_purchase() {
-            // let (item, purchase_waypoint, sell_waypoint) =  find_new_item_to_purchase(markets_query.iter()
+            println!("finding new item to purchase");
+            let item_to_purchase = find_new_item_to_purchase(markets_query.iter().cloned().collect::<Vec<Market>>());
+            println!("found item_to_purchase: {:?}", item_to_purchase);
+            if item_to_purchase.purchase_waypoint != ship.nav.waypoint_symbol {
+                let nav = st_client::move_ship(&mut ship, item_to_purchase.purchase_waypoint.clone());
+                match nav {
+                    Ok(nav) => {
+                        ship.nav = nav.clone();
+                        ship_selected_event.send(ShipSelected(ship_entity));
+                    }
+                    Err(e) => {
+                        error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
+                    }
+                }
+                println!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
+            } else {
+                match st_client::buy_items(&ship, &item_to_purchase) {
+                    Ok(purchase_response) => {
+                        ship.cargo.add_units(purchase_response.transaction.units);
+                        ship.cargo.add_inventory_item(Inventory {
+                            symbol: item_to_purchase.item.clone(),
+                            units: purchase_response.transaction.units,
+                        });
+                        println!("purchase_response: {:?}", purchase_response);
+                    }
+                    Err(e) => {
+                        error_text.single_mut().sections[0].value = format!("Error: Unable purchasep: {e}").to_string();
+                    }
+                }
+            }
             return;
         }
 
@@ -38,14 +118,12 @@ struct PriceWaypoint {
     pub(crate) waypoint: String,
 }
 
-fn find_new_item_to_purchase(markets: Vec<Market>) -> (String, String, String, f32) {
-
-  let mut foot_item_to_purchase_price: HashMap<String, PriceWaypoint> = HashMap::new();
+fn find_new_item_to_purchase(markets: Vec<Market>) -> BestItemToTrade {
+    let mut foot_item_to_purchase_price: HashMap<String, PriceWaypoint> = HashMap::new();
     let mut foot_item_to_sell_price: HashMap<String, PriceWaypoint> = HashMap::new();
     for market in markets.iter() {
         market.trade_goods.iter().for_each(|trade_good| {
-            if let Some(existing_purchase) = foot_item_to_purchase_price.get_mut(&trade_good.symbol)
-            {
+            if let Some(existing_purchase) = foot_item_to_purchase_price.get_mut(&trade_good.symbol) {
                 if trade_good.purchase_price < existing_purchase.price {
                     existing_purchase.price = trade_good.purchase_price;
                     existing_purchase.waypoint = market.symbol.clone();
@@ -55,7 +133,7 @@ fn find_new_item_to_purchase(markets: Vec<Market>) -> (String, String, String, f
                     trade_good.symbol.clone(),
                     PriceWaypoint {
                         price: trade_good.purchase_price,
-                        waypoint: trade_good.symbol.clone(),
+                        waypoint: market.symbol.clone(),
                     },
                 );
             }
@@ -70,21 +148,20 @@ fn find_new_item_to_purchase(markets: Vec<Market>) -> (String, String, String, f
                     trade_good.symbol.clone(),
                     PriceWaypoint {
                         price: trade_good.sell_price,
-                        waypoint: trade_good.symbol.clone(),
+                        waypoint: market.symbol.clone(),
                     },
                 );
             }
         });
     }
 
-    dbg!(&foot_item_to_purchase_price);
-    dbg!(&foot_item_to_sell_price);
-
     let mut biggest_gap = 0.;
-    let mut item = String::new();
-    let mut purchase_waypoint = String::new();
-    let mut sell_waypoint = String::new();
-    let mut purchase_price = 0.;
+    let mut best_item_to_trade = BestItemToTrade {
+        item: String::new(),
+        purchase_waypoint: String::new(),
+        sell_waypoint: String::new(),
+        purchase_price: 0.,
+    };
 
     for (purchase_key, purchase_value) in &foot_item_to_purchase_price {
         if foot_item_to_sell_price.contains_key(purchase_key) {
@@ -92,15 +169,15 @@ fn find_new_item_to_purchase(markets: Vec<Market>) -> (String, String, String, f
             let tmp_gap = sell_value.price - purchase_value.price;
             if tmp_gap > biggest_gap {
                 biggest_gap = tmp_gap;
-                item = purchase_key.clone();
-                purchase_waypoint = purchase_value.waypoint.clone();
-                sell_waypoint = sell_value.waypoint.clone();
-                purchase_price = purchase_value.price;
+                best_item_to_trade.item = purchase_key.clone();
+                best_item_to_trade.purchase_waypoint = purchase_value.waypoint.clone();
+                best_item_to_trade.sell_waypoint = sell_value.waypoint.clone();
+                best_item_to_trade.purchase_price = purchase_value.price;
             }
         }
     }
 
-    (item, purchase_waypoint, sell_waypoint, purchase_price)
+    best_item_to_trade
 }
 
 #[cfg(test)]
@@ -109,11 +186,7 @@ mod tests {
 
     #[test]
     fn simple_test_markets() {
-        let markets = vec![
-            get_simple_market_one(),
-            get_simple_market_two(),
-            get_simple_market_three(),
-        ];
+        let markets = vec![get_simple_market_one(), get_simple_market_two(), get_simple_market_three()];
 
         let res = find_new_item_to_purchase(markets);
         dbg!(res);

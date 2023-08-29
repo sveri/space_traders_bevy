@@ -10,7 +10,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::game::{
     components::Market,
-    ship::components::{Nav, NavWrapper},
+    ship::components::{Nav, NavWrapper, Ship, BestItemToTrade, PurchaseSellResponse, FlightStatus},
     waypoint::components::Waypoints,
 };
 
@@ -62,6 +62,12 @@ struct Navigate {
     waypoint_symbol: String,
 }
 
+#[derive(Serialize, Debug)]
+struct PurchaseSell {
+    symbol: String,
+    units: i32
+}
+
 pub(crate) fn fetch_agent_details() -> AgentDetails {
     let resp = send_get("https://api.spacetraders.io/v2/my/agent");
     let agent_details: GenericResponse<AgentDetails> = serde_json::from_str(&resp.unwrap()).unwrap();
@@ -74,27 +80,78 @@ pub(crate) fn fetch_waypoints(system_symbol: &str) -> Result<Waypoints> {
     Ok(resp)
 }
 
-pub(crate) fn orbit_ship(ship_symbol: &str) -> String {
+pub(crate) fn orbit_ship(ship_symbol: &str) -> Result<String> {
     let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship_symbol).as_str(), "".to_string());
-    resp
+    Ok(resp)
 }
 
-pub(crate) fn dock_ship(ship_symbol: &str) -> String {
+pub(crate) fn dock_ship(ship_symbol: &str) -> Result<String> {
     let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/dock", ship_symbol).as_str(), "".to_string());
-    resp
+    Ok(resp)
 }
 
-pub(crate) fn move_ship(ship_symbol: &str, target_waypoint: String) -> Result<Nav> {
+// pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<Nav> {
+pub(crate) fn move_ship(ship: &Ship, target_waypoint: String) -> Result<Nav> {
     let navigate = Navigate {
         waypoint_symbol: target_waypoint,
     };
+
+    if ship.is_docked() {
+        // ship.nav.status = FlightStatus::IN_ORBIT;
+        orbit_ship(&ship.symbol)?;
+    }
+
     match send_post_with_error(
-        format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship_symbol).as_str(),
+        format!("https://api.spacetraders.io/v2/my/ships/{}/navigate", ship.symbol).as_str(),
         serde_json::to_string(&navigate).unwrap(),
     ) {
         Ok(resp) => {
             let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
             Ok(nav_wrapper.data.nav)
+        }
+        Err(err) => Err(err),
+    }
+}
+
+pub(crate) fn buy_items(ship: &Ship, item: &BestItemToTrade) -> Result<PurchaseSellResponse> {
+    let purchase_body = PurchaseSell {
+        symbol: item.item.clone(),
+        units: 10,
+    };
+
+    if ship.is_in_orbit() {
+        dock_ship(&ship.symbol)?;
+    }
+
+    match send_post_with_error(
+        format!("https://api.spacetraders.io/v2/my/ships/{}/purchase", ship.symbol).as_str(),
+        serde_json::to_string(&purchase_body).unwrap(),
+    ) {
+        Ok(resp) => {
+            let nav_wrapper: GenericResponse<PurchaseSellResponse> = serde_json::from_str(&resp)?;
+            Ok(nav_wrapper.data)
+        }
+        Err(err) => Err(err),
+    }
+}
+
+pub(crate) fn sell_items(ship: &Ship, sell_symbol: String, units: i32) -> Result<PurchaseSellResponse> {
+    let sell_body = PurchaseSell {
+        symbol: sell_symbol,
+        units,
+    };
+
+    if ship.is_in_orbit() {
+        dock_ship(&ship.symbol)?;
+    }
+
+    match send_post_with_error(
+        format!("https://api.spacetraders.io/v2/my/ships/{}/sell", ship.symbol).as_str(),
+        serde_json::to_string(&sell_body).unwrap(),
+    ) {
+        Ok(resp) => {
+            let nav_wrapper: GenericResponse<PurchaseSellResponse> = serde_json::from_str(&resp)?;
+            Ok(nav_wrapper.data)
         }
         Err(err) => Err(err),
     }

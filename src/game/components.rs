@@ -5,7 +5,7 @@ use std::fmt::Display;
 use bevy::{prelude::{Component, ReflectComponent}, reflect::Reflect};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug, Clone)]
 #[reflect(Component)]
 pub(crate) struct Market {
     pub(crate) symbol: String,
@@ -44,7 +44,7 @@ impl Market {
     // }
 }
 
-#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug, Clone)]
 #[reflect(Component)]
 pub(crate) struct ImportExport {
     pub(crate) symbol: String,
@@ -58,7 +58,7 @@ impl Display for ImportExport {
     }
 }
 
-#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug, Clone)]
 #[reflect(Component)]
 pub(crate) struct Transaction {
     #[serde(alias = "waypointSymbol")]
@@ -77,7 +77,7 @@ pub(crate) struct Transaction {
     pub(crate) timestamp: String,
 }
 
-#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug)]
+#[derive(Deserialize, Serialize, Reflect, Component, Default, Debug, Clone)]
 #[reflect(Component)]
 pub(crate) struct TradeGood {
     pub(crate) symbol: String,

@@ -62,7 +62,7 @@ pub(crate) fn handle_orbit_clicked_event(
 ) {
     if let Ok(selected_ship) = selected_ship.get_single() {
         let res = st_client::orbit_ship(selected_ship.ship.symbol.as_str());
-        match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
+        match serde_json::from_str::<GenericResponse<NavWrapper>>(&res.unwrap()) {
             Ok(nav_details) => {
                 for (ship_entity, mut ship) in ships.iter_mut() {
                     if ship.symbol == selected_ship.ship.symbol {
@@ -86,7 +86,7 @@ pub(crate) fn handle_dock_clicked_event(
 ) {
     if let Ok(selected_ship) = selected_ship.get_single() {
         let res = st_client::dock_ship(selected_ship.ship.symbol.as_str());
-        match serde_json::from_str::<GenericResponse<NavWrapper>>(&res) {
+        match serde_json::from_str::<GenericResponse<NavWrapper>>(&res.unwrap()) {
             Ok(nav_details) => {
                 for (ship_entity, mut ship) in ships.iter_mut() {
                     if ship.symbol == selected_ship.ship.symbol {
@@ -111,7 +111,7 @@ pub(crate) fn handle_move_ship(
     mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
     if let (Ok(waypoint), Ok(selected_ship)) = (selected_waypoint.get_single(), selected_ship_query.get_single()) {
-        let nav = st_client::move_ship(selected_ship.ship.symbol.as_str(), waypoint.waypoint.symbol.to_string());
+        let nav = st_client::move_ship(&selected_ship.ship, waypoint.waypoint.symbol.to_string());
         match nav {
             Ok(nav) => {
                 for (ship_entity, mut ship) in ships.iter_mut() {

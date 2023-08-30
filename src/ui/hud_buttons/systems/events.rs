@@ -57,19 +57,16 @@ impl From<ListenerInput<Pointer<Click>>> for AutoTradeClicked {
 }
 
 pub(crate) fn handle_orbit_clicked_event(
-    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    mut ships: Query<(Entity, &mut Ship)>, mut ship_selected_event: EventWriter<ShipSelected>,
+    selected_ship: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<&mut Ship>,
+    mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
-    if let Ok(selected_ship) = selected_ship.get_single() {
-        let res = st_client::orbit_ship(selected_ship.ship.symbol.as_str());
+    if let Some(selected_ship_entity) = selected_ship.0 {
+        let mut selected_ship = ships.get_mut(selected_ship_entity).unwrap();
+        let res = st_client::orbit_ship(selected_ship.symbol.as_str());
         match serde_json::from_str::<GenericResponse<NavWrapper>>(&res.unwrap()) {
             Ok(nav_details) => {
-                for (ship_entity, mut ship) in ships.iter_mut() {
-                    if ship.symbol == selected_ship.ship.symbol {
-                        ship.nav = nav_details.data.nav.clone();
-                        ship_selected_event.send(ShipSelected(ship_entity));
-                    }
-                }
+                selected_ship.nav = nav_details.data.nav.clone();
+                ship_selected_event.send(ShipSelected(selected_ship_entity));
             }
             Err(e) => {
                 panic!("Error reading navigation data when orbiting ship: {e}");
@@ -81,20 +78,16 @@ pub(crate) fn handle_orbit_clicked_event(
 }
 
 pub(crate) fn handle_dock_clicked_event(
-    selected_ship: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    mut ships: Query<(Entity, &mut Ship)>, mut ship_selected_event: EventWriter<ShipSelected>,
+    selected_ship: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<&mut Ship>,
+    mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
-    if let Ok(selected_ship) = selected_ship.get_single() {
-        let res = st_client::dock_ship(selected_ship.ship.symbol.as_str());
+    if let Some(selected_ship_entity) = selected_ship.0 {
+        let mut selected_ship = ships.get_mut(selected_ship_entity).unwrap();
+        let res = st_client::dock_ship(selected_ship.symbol.as_str());
         match serde_json::from_str::<GenericResponse<NavWrapper>>(&res.unwrap()) {
             Ok(nav_details) => {
-                for (ship_entity, mut ship) in ships.iter_mut() {
-                    if ship.symbol == selected_ship.ship.symbol {
-                        ship.nav = nav_details.data.nav.clone();
-                        ship_selected_event.send(ShipSelected(ship_entity));
-                        break;
-                    }
-                }
+                selected_ship.nav = nav_details.data.nav.clone();
+                ship_selected_event.send(ShipSelected(selected_ship_entity));
             }
             Err(e) => {
                 panic!("Error reading navigation data when docking ship: {e}");
@@ -106,21 +99,17 @@ pub(crate) fn handle_dock_clicked_event(
 }
 
 pub(crate) fn handle_move_ship(
-    selected_ship_query: Query<&SelectedShip>, selected_waypoint: Query<&SelectedWaypoint>,
-    mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &mut Ship)>,
+    selected_ship_query: Res<SelectedShip>, selected_waypoint: Query<&SelectedWaypoint>,
+    mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<&mut Ship>,
     mut ship_selected_event: EventWriter<ShipSelected>,
 ) {
-    if let (Ok(waypoint), Ok(selected_ship)) = (selected_waypoint.get_single(), selected_ship_query.get_single()) {
-        let nav = st_client::move_ship(&selected_ship.ship, waypoint.waypoint.symbol.to_string());
+    if let (Ok(waypoint), Some(selected_ship_entity)) = (selected_waypoint.get_single(), selected_ship_query.0) {
+        let mut ship = ships.get_mut(selected_ship_entity).unwrap();
+        let nav = st_client::move_ship(&ship, waypoint.waypoint.symbol.to_string());
         match nav {
             Ok(nav) => {
-                for (ship_entity, mut ship) in ships.iter_mut() {
-                    if ship.symbol == selected_ship.ship.symbol {
-                        ship.nav = nav.clone();
-                        ship_selected_event.send(ShipSelected(ship_entity));
-                        break;
-                    }
-                }
+                ship.nav = nav.clone();
+                ship_selected_event.send(ShipSelected(selected_ship_entity));
             }
             Err(e) => {
                 error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
@@ -132,19 +121,17 @@ pub(crate) fn handle_move_ship(
 }
 
 pub(crate) fn handle_get_market_clicked(
-    mut commands: Commands, selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>,
+    mut commands: Commands, selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
+    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>, ships: Query<&Ship>,
 ) {
-    if let Ok(selected_ship) = selected_ship_query.get_single() {
-        if selected_ship.ship.nav.status == FlightStatus::IN_TRANSIT {
+    if let Some(selected_ship) = selected_ship_query.0 {
+        let ship = ships.get(selected_ship).unwrap();
+        if ship.nav.status == FlightStatus::IN_TRANSIT {
             error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
             return;
         }
 
-        let found_waypoints = waypoint_query
-            .iter()
-            .filter(|w| w.symbol == selected_ship.ship.nav.waypoint_symbol)
-            .collect::<Vec<&Waypoint>>();
+        let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
         let found_waypoint = found_waypoints.get(0).unwrap();
 
         if !found_waypoint.has_marketplace() {
@@ -173,23 +160,18 @@ pub(crate) fn handle_get_market_clicked(
         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
     }
 }
-// pub(crate) fn handle_autotrade_clicked<T: std::marker::Send + std::marker::Sync + 'static>(
 pub(crate) fn handle_autotrade_clicked(
-    selected_ship_query: Query<&SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>, mut ships: Query<(Entity, &Ship, &mut ShipState)>,
+    selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
+    mut ship_states_query: Query<&mut ShipState>,
 ) {
-    if let Ok(selected_ship) = selected_ship_query.get_single() {
-
-        for (_, ship, mut state) in ships.iter_mut() {
-            if ship.symbol == selected_ship.ship.symbol {
-                if state.is_idle() {
-                    state.state = ShipStateEnum::Autotrade;
-                } else {
-                    state.state = ShipStateEnum::Idle;
-                }
-                dbg!(&state);
-                
-                break;
+    if let Some(selected_ship_entity) = selected_ship_query.0 {
+        if let Ok(mut state) = ship_states_query.get_mut(selected_ship_entity) {
+            if state.is_idle() {
+                state.state = ShipStateEnum::Autotrade;
+            } else {
+                state.state = ShipStateEnum::Idle;
             }
+            dbg!(&state);
         }
     } else {
         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();

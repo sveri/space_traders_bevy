@@ -103,12 +103,6 @@ pub(crate) fn update_ships(
             }
             return;
         }
-
-        // if ship.has_cargo() || ship.is_in_orbit() {
-        //     st_client::dock_ship(ship.symbol.as_str());
-        // }
-
-        // if
     }
 }
 

@@ -160,20 +160,19 @@ pub(crate) fn handle_get_market_clicked(
         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
     }
 }
-// pub(crate) fn handle_autotrade_clicked<T: std::marker::Send + std::marker::Sync + 'static>(
 pub(crate) fn handle_autotrade_clicked(
     selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    mut ships: Query<(&Ship, &mut ShipState)>,
+    mut ship_states_query: Query<&mut ShipState>,
 ) {
     if let Some(selected_ship_entity) = selected_ship_query.0 {
-        let (ship, mut state) = ships.get_mut(selected_ship_entity).unwrap();
-        // for (_, ship, mut state) in ships.iter_mut() {
-        if state.is_idle() {
-            state.state = ShipStateEnum::Autotrade;
-        } else {
-            state.state = ShipStateEnum::Idle;
+        if let Ok(mut state) = ship_states_query.get_mut(selected_ship_entity) {
+            if state.is_idle() {
+                state.state = ShipStateEnum::Autotrade;
+            } else {
+                state.state = ShipStateEnum::Idle;
+            }
+            dbg!(&state);
         }
-        dbg!(&state);
     } else {
         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
     }

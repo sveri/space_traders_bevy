@@ -27,6 +27,7 @@ pub(crate) fn update_ship_description(
 ) {
     for select_event in event.iter() {
         if let Ok((_entity, ship)) = ship_query.get(select_event.0) {
+            tracing::trace!("Ship selected: {:?}", ship);
             select_ship_text.single_mut().sections[0].value =
                 format!("Selected Ship: {}, Status: {}, Fuel: {}", ship.symbol, ship.nav.status, ship.fuel);
         }

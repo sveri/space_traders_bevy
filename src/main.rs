@@ -10,7 +10,8 @@ use bevy::{
 };
 use bevy_mod_picking::{prelude::RaycastPickCamera, DefaultPickingPlugins};
 use bevy_save::{AppSaveableExt, SavePlugins, WorldSaveableExt};
-use game::components::{Market, ImportExport, Transaction, TradeGood};
+use game::components::{ImportExport, Market, TradeGood, Transaction};
+use tracing_subscriber::EnvFilter;
 
 #[derive(Component)]
 struct Person;
@@ -24,16 +25,16 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default()));
 }
 
-fn save_world(world: &mut World) { world.save("space_traders").expect("Failed to save"); }
+fn save_world(world: &World) { world.save("space_traders").expect("Failed to save"); }
 
 fn load_world(world: &mut World) {
     match world.load("space_traders") {
         Ok(_) => {
-            println!("Loaded save");
+            tracing::info!("Loaded savefile");
         }
         Err(e) => {
-            println!("Failed to load save, probably because it doesn't exist yet");
-            println!("{e}");
+            tracing::error!("Failed to load save, probably because it doesn't exist yet");
+            tracing::error!("{e}");
         }
     }
 }
@@ -64,12 +65,36 @@ impl Plugin for MainPlugin {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+
     match dotenvy::dotenv() {
         Ok(_) => {}
         Err(_) => {
             panic!("please proved a .env file with the space traders key")
         }
     }
+
+    // let subscriber = tracing_subscriber::FmtSubscriber::new();
+    // use that subscriber to process traces emitted after this point
+    // tracing::subscriber::set_global_default(subscriber)?;
+
+    let subscriber = tracing_subscriber::fmt()
+        // Use a more compact, abbreviated log format
+        .compact()
+        // Display source code file paths
+        .with_file(true)
+        // Display source code line numbers
+        .with_line_number(true)
+        // Display the thread ID an event was recorded on
+        // .with_thread_ids(true)
+        // Don't display the event's target (module path)
+        .with_target(false)
+        // Build the subscriber
+        .with_env_filter(EnvFilter::from_default_env())
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    tracing::info!("Starting up");
 
     App::new()
         // .insert_resource(WinitSettings::desktop_app())

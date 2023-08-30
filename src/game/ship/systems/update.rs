@@ -19,10 +19,10 @@ pub(crate) fn update_ships(
 ) {
     for (mut transform, mut ship, ship_state, ship_entity) in ships.iter_mut() {
         transform.translation = ship.get_position();
-        dbg!(ship_state.state.clone());
+        // dbg!(ship_state.state.clone());
 
         if ship_state.is_idle() || ship.is_in_transit() {
-            println!("ship {} is idle or in transit", ship.symbol);
+            // tracing::trace!("ship {} is idle or in transit", ship.symbol);
             return;
         }
 
@@ -53,13 +53,13 @@ pub(crate) fn update_ships(
                         error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
                     }
                 }
-                println!("moving ship to sell waypoint: {}", highest_sell_waypoint);
+                tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
                 match st_client::sell_items(&ship, inventory.symbol.clone(), inventory.units) {
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
                         ship.cargo.units -= purchase_response.transaction.units;
-                        println!("sell_response: {:?}", purchase_response);
+                        tracing::trace!("sell_response: {:?}", purchase_response);
                     }
                     Err(e) => {
                         error_text.single_mut().sections[0].value = format!("Error: Unable to sell: {e}").to_string();
@@ -71,9 +71,9 @@ pub(crate) fn update_ships(
         }
 
         if ship_state.has_to_find_new_item_to_purchase() {
-            println!("finding new item to purchase");
+            tracing::trace!("finding new item to purchase");
             let item_to_purchase = find_new_item_to_purchase(markets_query.iter().cloned().collect::<Vec<Market>>());
-            println!("found item_to_purchase: {:?}", item_to_purchase);
+            tracing::trace!("found item_to_purchase: {:?}", item_to_purchase);
             if item_to_purchase.purchase_waypoint != ship.nav.waypoint_symbol {
                 let nav = st_client::move_ship(&mut ship, item_to_purchase.purchase_waypoint.clone());
                 match nav {
@@ -85,7 +85,7 @@ pub(crate) fn update_ships(
                         error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
                     }
                 }
-                println!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
+                tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
                 match st_client::buy_items(&ship, &item_to_purchase) {
                     Ok(purchase_response) => {
@@ -94,7 +94,7 @@ pub(crate) fn update_ships(
                             symbol: item_to_purchase.item.clone(),
                             units: purchase_response.transaction.units,
                         });
-                        println!("purchase_response: {:?}", purchase_response);
+                        tracing::trace!("purchase_response: {:?}", purchase_response);
                     }
                     Err(e) => {
                         error_text.single_mut().sections[0].value = format!("Error: Unable purchasep: {e}").to_string();

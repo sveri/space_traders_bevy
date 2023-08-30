@@ -9,10 +9,14 @@ pub(crate) struct MainCamera;
 #[derive(Component)]
 pub(crate) struct SelectedWaypointText;
 
-#[derive(Component, Debug)]
-pub(crate) struct SelectedShip {
-    pub(crate) ship: Ship,
-}
+#[derive(Resource, Debug, bevy::prelude::Deref)]
+pub(crate) struct SelectedShip(pub(crate) Option<Entity>);
+
+// impl std::ops::Deref for SelectedShip {
+//     type Target = Option<Entity>;
+
+//     fn deref(&self) -> &Self::Target { &self.0 }
+// }
 
 #[derive(Component, Debug)]
 pub(crate) struct SelectedWaypoint {

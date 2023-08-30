@@ -15,18 +15,9 @@ impl From<ListenerInput<Pointer<Click>>> for ShipSelected {
     fn from(click_event: ListenerInput<Pointer<Click>>) -> Self { Self(click_event.target) }
 }
 
-pub(crate) fn handle_ship_selected_event(
-    mut commands: Commands, mut event: EventReader<ShipSelected>, ship_query: Query<(Entity, &Ship)>,
-    mut selected_ship_query: Query<&mut SelectedShip>,
-) {
+pub(crate) fn handle_ship_selected_event(mut event: EventReader<ShipSelected>, mut selected_entity: ResMut<SelectedShip>) {
     for select_event in event.iter() {
-        if let Ok((_entity, ship)) = ship_query.get(select_event.0) {
-            if let Ok(mut ssq) = selected_ship_query.get_single_mut() {
-                ssq.ship = ship.clone();
-            } else {
-                commands.spawn(SelectedShip { ship: ship.clone() });
-            }
-        }
+        selected_entity.0 = Some(select_event.0);
     }
 }
 

@@ -5,12 +5,11 @@
 use std::fmt::Display;
 
 use bevy::prelude::*;
-use serde::Deserialize;
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use tracing::Value;
 
 use crate::game::components::Transaction;
-
 
 // #[derive(Debug, Deserialize, Component, Clone)]
 // pub(crate) struct ShipWrapper {
@@ -46,12 +45,10 @@ impl ShipState {
         }
     }
 
-    pub(crate) fn is_idle(&self) -> bool {
-        self.state == ShipStateEnum::Idle
-    }
+    pub(crate) fn is_idle(&self) -> bool { self.state == ShipStateEnum::Idle }
 
     pub(crate) fn has_to_find_new_item_to_purchase(&self) -> bool {
-        if self.item_to_purchase.is_none() || self.item_to_sell.is_none(){
+        if self.item_to_purchase.is_none() || self.item_to_sell.is_none() {
             return true;
         }
         false
@@ -63,7 +60,7 @@ impl ShipState {
         }
 
         if let Some(waypoint) = &self.to_purchase_waypoint {
-            if ship.get_current_waypoint() == waypoint.clone(){
+            if ship.get_current_waypoint() == waypoint.clone() {
                 return true;
             }
         }
@@ -75,8 +72,6 @@ impl ShipState {
         false
     }
 }
-
-
 
 pub(crate) type Ships = Vec<Ship>;
 
@@ -90,58 +85,61 @@ pub(crate) struct Ship {
 }
 
 impl Ship {
-    pub(crate) fn get_display_size(&self) -> (f32, f32) {
-        (2., 4.)
+    pub(crate) fn get_display_size(&self) -> (f32, f32) { (2., 4.) }
+
+    pub(crate) fn has_arrived_at_destionation(&self) -> bool {
+        let utc: DateTime<Utc> = Utc::now();
+        let arrival_time: DateTime<Utc> = self.nav.route.arrival.parse::<DateTime<Utc>>().unwrap();
+        if (utc - arrival_time).num_milliseconds() > 0 {
+            tracing::trace!("ship {} arrived at destination", self.symbol);
+            return true;
+        }
+        false
     }
 
     pub(crate) fn get_position(&self) -> Vec3 {
         // ship arrival and destination are the same
         if self.nav.route.departure.symbol == self.nav.route.destination.symbol {
             tracing::trace!("ship {}, is at its destination", self.symbol);
-            Vec3 {x: self.nav.route.departure.x, y: self.nav.route.departure.y, z: 1.0 }
+            Vec3 {
+                x: self.nav.route.departure.x,
+                y: self.nav.route.departure.y,
+                z: 1.0,
+            }
         } else {
-            let utc: DateTime<Utc> = Utc::now();
-            let arrival_time: DateTime<Utc> = self.nav.route.arrival.parse::<DateTime<Utc>>().unwrap();
-            
             // ship arrived at destination
-            if (utc - arrival_time).num_milliseconds() > 0 {
+            if self.has_arrived_at_destionation() {
                 tracing::trace!("ship {} arrived at destination", self.symbol);
-                Vec3 {x: self.nav.route.destination.x, y: self.nav.route.destination.y, z: 1.0  }
-            } 
+                Vec3 {
+                    x: self.nav.route.destination.x,
+                    y: self.nav.route.destination.y,
+                    z: 1.0,
+                }
+            }
             // ship is moving from departure to destination
             else {
                 tracing::trace!("ship is moving to destination");
-                Vec3 {x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2., y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2. , z: 1.0}
+                Vec3 {
+                    x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2.,
+                    y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2.,
+                    z: 1.0,
+                }
             }
         }
     }
 
-    pub (crate) fn get_transform(&self) -> Transform {
-        Transform::from_translation(self.get_position())
-    }
+    pub(crate) fn get_transform(&self) -> Transform { Transform::from_translation(self.get_position()) }
 
-    pub(crate) fn is_in_transit(&self) -> bool {
-        self.nav.status == FlightStatus::IN_TRANSIT
-    }
+    pub(crate) fn is_in_transit(&self) -> bool { self.nav.status == FlightStatus::IN_TRANSIT }
 
-    pub(crate) fn has_cargo(&self) -> bool {
-        self.cargo.units > 0
-    }
+    pub(crate) fn has_cargo(&self) -> bool { self.cargo.units > 0 }
 
-    pub(crate) fn is_in_orbit(&self) -> bool {
-        self.nav.status == FlightStatus::IN_ORBIT
-    }
+    pub(crate) fn is_in_orbit(&self) -> bool { self.nav.status == FlightStatus::IN_ORBIT }
 
-    pub(crate) fn is_docked(&self) -> bool {
-        self.nav.status == FlightStatus::DOCKED
-    }
+    pub(crate) fn is_docked(&self) -> bool { self.nav.status == FlightStatus::DOCKED }
 
-    pub(crate) fn get_current_waypoint(&self) -> String {
-        self.nav.waypoint_symbol.clone()
-    }
-
+    pub(crate) fn get_current_waypoint(&self) -> String { self.nav.waypoint_symbol.clone() }
 }
-
 
 #[derive(Deserialize, Clone, Debug)]
 pub(crate) struct NavWrapper {
@@ -163,7 +161,7 @@ pub(crate) struct Nav {
 pub(crate) enum FlightStatus {
     IN_TRANSIT,
     IN_ORBIT,
-    DOCKED
+    DOCKED,
 }
 
 impl Display for FlightStatus {
@@ -181,7 +179,7 @@ pub(crate) enum FlightMode {
     DRIFT,
     STEALTH,
     CRUISE,
-    BURN
+    BURN,
 }
 
 #[derive(Reflect, Debug, Deserialize, Clone)]
@@ -223,9 +221,7 @@ pub(crate) struct Fuel {
 }
 
 impl std::fmt::Display for Fuel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}/{}", self.current, self.capacity)
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{}/{}", self.current, self.capacity) }
 }
 
 #[derive(Reflect, Debug, Deserialize, Clone)]
@@ -236,21 +232,15 @@ pub(crate) struct Cargo {
 }
 
 impl Cargo {
-    pub(crate) fn get_inventory(&self) -> Vec<Inventory> {
-        self.inventory.clone()
-    }
-    
-    pub(crate) fn set_inventory(&mut self, new_inventory: Vec<Inventory>) {
-        self.inventory = new_inventory.clone();
-    }
+    pub(crate) fn get_inventory(&self) -> Vec<Inventory> { self.inventory.clone() }
 
-    pub(crate) fn add_units(&mut self, units: i32) {
-        self.units += units;
-    }
+    pub(crate) fn set_inventory(&mut self, new_inventory: Vec<Inventory>) { self.inventory = new_inventory.clone(); }
 
-    pub(crate) fn add_inventory_item(&mut self, item: Inventory) {
-        self.inventory.push(item);
-    }
+    pub(crate) fn add_units(&mut self, units: i32) { self.units += units; }
+
+    pub(crate) fn add_inventory_item(&mut self, item: Inventory) { self.inventory.push(item); }
+
+    pub(crate) fn space_available(&self) -> i32 { self.capacity - self.units }
 }
 
 #[derive(Reflect, Debug, Deserialize, Clone)]
@@ -258,9 +248,6 @@ pub(crate) struct Inventory {
     pub(crate) symbol: String,
     pub(crate) units: i32,
 }
-
-
-
 
 #[derive(Debug)]
 pub(crate) struct BestItemToTrade {

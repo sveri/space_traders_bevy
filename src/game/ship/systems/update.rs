@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     game::{
         components::Market,
-        ship::components::{BestItemToTrade, Ship, ShipState, Inventory},
+        ship::components::{BestItemToTrade, Ship, ShipState, Inventory, FlightStatus, FlightMode},
     },
     st_client,
     ui::hud::components::ErrorText,
@@ -21,12 +21,11 @@ pub(crate) fn update_ships(
         transform.translation = ship.get_position();
         // dbg!(ship_state.state.clone());
 
-        // if ship.is_in_transit() {
-        //     if ship.did_arrive() {
-
-        //     }
-        //     continue;
-        // }
+        if ship.is_in_transit() && ship.has_arrived_at_destionation() {
+            ship.nav.status = FlightStatus::IN_ORBIT;
+            ship.nav.flight_mode = FlightMode::CRUISE;
+            continue;
+        }
 
 
         if ship_state.is_idle() || ship.is_in_transit() {

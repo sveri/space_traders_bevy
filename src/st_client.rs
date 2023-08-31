@@ -132,7 +132,7 @@ pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<Nav>
 pub(crate) fn buy_items(ship: &mut Ship, item: &BestItemToTrade) -> Result<PurchaseSellResponse> {
     let purchase_body = PurchaseSell {
         symbol: item.item.clone(),
-        units: 10,
+        units: ship.cargo.space_available(),
     };
 
     if ship.is_in_orbit() {

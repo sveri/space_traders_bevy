@@ -7,6 +7,7 @@ use std::fmt::Display;
 use bevy::prelude::*;
 use serde::Deserialize;
 use chrono::{DateTime, Utc};
+use tracing::Value;
 
 use crate::game::components::Transaction;
 
@@ -79,7 +80,7 @@ impl ShipState {
 
 pub(crate) type Ships = Vec<Ship>;
 
-#[derive(Debug, Deserialize, Component, Clone)]
+#[derive(Reflect, Debug, Deserialize, Component, Clone)]
 pub(crate) struct Ship {
     pub(crate) symbol: String,
     pub(crate) crew: Crew,
@@ -94,21 +95,23 @@ impl Ship {
     }
 
     pub(crate) fn get_position(&self) -> Vec3 {
-        // ship arrivale and destination are the same
+        // ship arrival and destination are the same
         if self.nav.route.departure.symbol == self.nav.route.destination.symbol {
+            tracing::trace!("ship {}, is at its destination", self.symbol);
             Vec3 {x: self.nav.route.departure.x, y: self.nav.route.departure.y, z: 1.0 }
         } else {
             let utc: DateTime<Utc> = Utc::now();
             let arrival_time: DateTime<Utc> = self.nav.route.arrival.parse::<DateTime<Utc>>().unwrap();
-
+            
             // ship arrived at destination
             if (utc - arrival_time).num_milliseconds() > 0 {
+                tracing::trace!("ship {} arrived at destination", self.symbol);
                 Vec3 {x: self.nav.route.destination.x, y: self.nav.route.destination.y, z: 1.0  }
             } 
             // ship is moving from departure to destination
             else {
+                tracing::trace!("ship is moving to destination");
                 Vec3 {x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2., y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2. , z: 1.0}
-
             }
         }
     }
@@ -145,7 +148,7 @@ pub(crate) struct NavWrapper {
     pub(crate) nav: Nav,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 
 pub(crate) struct Nav {
     pub(crate) status: FlightStatus,
@@ -156,7 +159,7 @@ pub(crate) struct Nav {
     pub(crate) route: Route,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Reflect, Debug, Deserialize, Clone, PartialEq)]
 pub(crate) enum FlightStatus {
     IN_TRANSIT,
     IN_ORBIT,
@@ -173,7 +176,7 @@ impl Display for FlightStatus {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Reflect, Debug, Deserialize, Clone, PartialEq)]
 pub(crate) enum FlightMode {
     DRIFT,
     STEALTH,
@@ -181,7 +184,7 @@ pub(crate) enum FlightMode {
     BURN
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Route {
     pub(crate) departure: Departure,
     pub(crate) destination: Destination,
@@ -190,21 +193,21 @@ pub(crate) struct Route {
     pub(crate) departure_time: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Departure {
     pub(crate) symbol: String,
     pub(crate) x: f32,
     pub(crate) y: f32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Destination {
     pub(crate) symbol: String,
     pub(crate) x: f32,
     pub(crate) y: f32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Crew {
     pub(crate) current: i32,
     pub(crate) capacity: i32,
@@ -213,7 +216,7 @@ pub(crate) struct Crew {
     pub(crate) wages: i32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Fuel {
     pub(crate) current: i32,
     pub(crate) capacity: i32,
@@ -225,7 +228,7 @@ impl std::fmt::Display for Fuel {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Cargo {
     pub(crate) capacity: i32,
     pub(crate) units: i32,
@@ -250,7 +253,7 @@ impl Cargo {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Reflect, Debug, Deserialize, Clone)]
 pub(crate) struct Inventory {
     pub(crate) symbol: String,
     pub(crate) units: i32,

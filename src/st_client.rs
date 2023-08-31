@@ -80,25 +80,38 @@ pub(crate) fn fetch_waypoints(system_symbol: &str) -> Result<Waypoints> {
     Ok(resp)
 }
 
-pub(crate) fn orbit_ship(ship_symbol: &str) -> Result<String> {
-    let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship_symbol).as_str(), "".to_string());
-    Ok(resp)
+// pub(crate) fn orbit_ship(ship_symbol: &str) -> Result<String> {
+pub(crate) fn orbit_ship(ship: &mut Ship) -> Result<String> {
+    // let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship.symbol).as_str(), "".to_string());
+    // Ok(resp)
+    match send_post_with_error(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship.symbol).as_str(), "".to_string()) {
+        Ok(resp) => {
+            let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
+            ship.nav = nav_wrapper.data.nav.clone();
+            Ok(resp)
+        }
+        Err(err) => Err(err),
+    }
 }
 
-pub(crate) fn dock_ship(ship_symbol: &str) -> Result<String> {
-    let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/dock", ship_symbol).as_str(), "".to_string());
-    Ok(resp)
+pub(crate) fn dock_ship(ship: &mut Ship) -> Result<String> {
+    match send_post_with_error(format!("https://api.spacetraders.io/v2/my/ships/{}/dock", ship.symbol).as_str(), "".to_string()) {
+        Ok(resp) => {
+            let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
+            ship.nav = nav_wrapper.data.nav.clone();
+            Ok(resp)
+        }
+        Err(err) => Err(err),
+    }
 }
 
-// pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<Nav> {
-pub(crate) fn move_ship(ship: &Ship, target_waypoint: String) -> Result<Nav> {
+pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<Nav> {
     let navigate = Navigate {
         waypoint_symbol: target_waypoint,
     };
 
     if ship.is_docked() {
-        // ship.nav.status = FlightStatus::IN_ORBIT;
-        orbit_ship(&ship.symbol)?;
+        orbit_ship(ship)?;
     }
 
     match send_post_with_error(
@@ -107,20 +120,23 @@ pub(crate) fn move_ship(ship: &Ship, target_waypoint: String) -> Result<Nav> {
     ) {
         Ok(resp) => {
             let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
+            let msg = format!("moving to response {:?}", nav_wrapper.data.nav);
+            tracing::trace!(msg);
+            ship.nav = nav_wrapper.data.nav.clone();
             Ok(nav_wrapper.data.nav)
         }
         Err(err) => Err(err),
     }
 }
 
-pub(crate) fn buy_items(ship: &Ship, item: &BestItemToTrade) -> Result<PurchaseSellResponse> {
+pub(crate) fn buy_items(ship: &mut Ship, item: &BestItemToTrade) -> Result<PurchaseSellResponse> {
     let purchase_body = PurchaseSell {
         symbol: item.item.clone(),
         units: 10,
     };
 
     if ship.is_in_orbit() {
-        dock_ship(&ship.symbol)?;
+        dock_ship(ship)?;
     }
 
     match send_post_with_error(
@@ -135,14 +151,14 @@ pub(crate) fn buy_items(ship: &Ship, item: &BestItemToTrade) -> Result<PurchaseS
     }
 }
 
-pub(crate) fn sell_items(ship: &Ship, sell_symbol: String, units: i32) -> Result<PurchaseSellResponse> {
+pub(crate) fn sell_items(ship: &mut Ship, sell_symbol: String, units: i32) -> Result<PurchaseSellResponse> {
     let sell_body = PurchaseSell {
         symbol: sell_symbol,
         units,
     };
 
     if ship.is_in_orbit() {
-        dock_ship(&ship.symbol)?;
+        dock_ship(ship)?;
     }
 
     match send_post_with_error(
@@ -191,7 +207,7 @@ pub(crate) fn send_post_with_error(url: &str, body: String) -> Result<String> {
         Ok(resp) => {
             if &resp.status() == &StatusCode::BAD_REQUEST {
                 let bad_request_response: BadRequestResponse = serde_json::from_str(&resp.text().unwrap()).unwrap();
-                println!("Error: {}", &bad_request_response.error.message);
+                tracing::error!("Error: {}", &bad_request_response.error.message);
                 Err(anyhow!(SpaceTradersApiError::BadRequestError(bad_request_response.error.message)))
             } else {
                 Ok(resp.text().unwrap())

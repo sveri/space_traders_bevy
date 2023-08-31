@@ -29,9 +29,10 @@ pub(crate) fn handle_waypoint_selected_event(
             if let Ok(mut swq) = selected_waypoint_query.get_single_mut() {
                 swq.waypoint = waypoint.clone();
             } else {
-                commands.spawn(SelectedWaypoint {
-                    waypoint: waypoint.clone(),
-                });
+                commands.spawn((SelectedWaypoint {
+                    waypoint: waypoint.clone()
+                    
+                }, Name::new(format!("Selected Waypoint {}", waypoint.symbol)),));
             }
         }
     }

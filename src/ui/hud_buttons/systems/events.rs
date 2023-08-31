@@ -62,7 +62,7 @@ pub(crate) fn handle_orbit_clicked_event(
 ) {
     if let Some(selected_ship_entity) = selected_ship.0 {
         let mut selected_ship = ships.get_mut(selected_ship_entity).unwrap();
-        let res = st_client::orbit_ship(selected_ship.symbol.as_str());
+        let res = st_client::orbit_ship(&mut selected_ship);
         match serde_json::from_str::<GenericResponse<NavWrapper>>(&res.unwrap()) {
             Ok(nav_details) => {
                 selected_ship.nav = nav_details.data.nav.clone();
@@ -83,7 +83,7 @@ pub(crate) fn handle_dock_clicked_event(
 ) {
     if let Some(selected_ship_entity) = selected_ship.0 {
         let mut selected_ship = ships.get_mut(selected_ship_entity).unwrap();
-        let res = st_client::dock_ship(selected_ship.symbol.as_str());
+        let res = st_client::dock_ship(&mut selected_ship);
         match serde_json::from_str::<GenericResponse<NavWrapper>>(&res.unwrap()) {
             Ok(nav_details) => {
                 selected_ship.nav = nav_details.data.nav.clone();
@@ -105,10 +105,9 @@ pub(crate) fn handle_move_ship(
 ) {
     if let (Ok(waypoint), Some(selected_ship_entity)) = (selected_waypoint.get_single(), selected_ship_query.0) {
         let mut ship = ships.get_mut(selected_ship_entity).unwrap();
-        let nav = st_client::move_ship(&ship, waypoint.waypoint.symbol.to_string());
+        let nav = st_client::move_ship(&mut ship, waypoint.waypoint.symbol.to_string());
         match nav {
-            Ok(nav) => {
-                ship.nav = nav.clone();
+            Ok(_) => {
                 ship_selected_event.send(ShipSelected(selected_ship_entity));
             }
             Err(e) => {
@@ -149,7 +148,8 @@ pub(crate) fn handle_get_market_clicked(
                     }
                 }
                 println!("market data: {}", serde_json::to_string_pretty(&market_data).unwrap());
-                commands.spawn(market_data);
+                let market_symbol = market_data.symbol.clone();
+                commands.spawn((market_data, Name::new(format!("Market {}", market_symbol))));
             }
             Err(e) => {
                 println!("{e}");

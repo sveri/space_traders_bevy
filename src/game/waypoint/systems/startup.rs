@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{PickableBundle, prelude::{RaycastPickTarget, Pointer, On, Click}};
+use tracing_subscriber::fmt::format;
 
 use crate::{st_client, game::waypoint::components::Waypoint};
 
@@ -23,6 +24,7 @@ pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServe
             PickableBundle::default(),
             RaycastPickTarget::default(),
             On::<Pointer<Click>>::send_event::<WaypointSelected>(),
+            Name::new(format!("Waypoint {}", waypoint.symbol))
         ));
     })
 }

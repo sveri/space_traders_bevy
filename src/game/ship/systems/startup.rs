@@ -39,11 +39,14 @@ pub(crate) fn add_ships(mut commands: Commands) {
                 transform: ship.get_transform(),
                 ..default()
             },
+            
+            // bevy_core::Name(ship.symbol.clone()),
             // ShipStateMachine::new(),
             ShipState::new(),
             PickableBundle::default(),
             RaycastPickTarget::default(),
             On::<Pointer<Click>>::send_event::<ShipSelected>(),
+            Name::new(ship.symbol.clone()),
         ));
     })
 }

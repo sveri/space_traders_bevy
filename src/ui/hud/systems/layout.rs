@@ -32,6 +32,7 @@ pub(crate) fn show_agent_details(mut commands: Commands) {
             ..default()
         }),
         AgentDetailsText,
+        Name::new("AgentDetailsText")
     ));
 }
 
@@ -53,6 +54,7 @@ pub(crate) fn selected_ship_text(mut commands: Commands) {
             ..default()
         }),
         SelectedShipText,
+        Name::new("SelectedShipText")
     ));
 }
 
@@ -74,6 +76,7 @@ pub(crate) fn selected_waypoint_text(mut commands: Commands) {
             ..default()
         }),
         SelectedWaypointText,
+        Name::new("SelectedWaypointText")
     ));
 }
 
@@ -94,5 +97,6 @@ pub(crate) fn init_error_text(mut commands: Commands){
             left: Val::Px(10.0),
             ..default()
         }),
-        ErrorText));
+        ErrorText,
+        Name::new("ErrorText")));
 }

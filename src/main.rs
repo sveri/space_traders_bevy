@@ -8,21 +8,19 @@ use bevy::{
     app::PluginGroupBuilder, log::LogPlugin, prelude::*, time::common_conditions::on_timer, window::PresentMode,
     winit::WinitSettings,
 };
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_picking::{prelude::RaycastPickCamera, DefaultPickingPlugins};
 use bevy_save::{AppSaveableExt, SavePlugins, WorldSaveableExt};
-use game::components::{ImportExport, Market, TradeGood, Transaction};
+use game::{components::{ImportExport, Market, TradeGood, Transaction}, ship::components::{ShipState, Ship}};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Component)]
 struct Person;
 
-#[derive(Component)]
-struct Name(String);
-
 fn setup_camera(mut commands: Commands) {
     let mut bundle = Camera2dBundle::default();
     bundle.projection.scale = 0.134;
-    commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default()));
+    commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default(), Name::new("Main Camera".to_string())));
 }
 
 fn save_world(world: &World) { world.save("space_traders").expect("Failed to save"); }
@@ -64,8 +62,17 @@ impl Plugin for MainPlugin {
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+struct DebugPlugin;
+impl Plugin for DebugPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(WorldInspectorPlugin::new())
+        .register_type::<Ship>()
+        // .register_type::<ShipState>()
+        ;
+    }
+}
 
+fn main() -> Result<(), Box<dyn Error>> {
     match dotenvy::dotenv() {
         Ok(_) => {}
         Err(_) => {
@@ -115,7 +122,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ..default()
                 }),
             MainPlugin,
-        ))
+            DebugPlugin,
+        ))        
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_plugins(DefaultPickingPlugins)
         // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))

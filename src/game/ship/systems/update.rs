@@ -21,9 +21,17 @@ pub(crate) fn update_ships(
         transform.translation = ship.get_position();
         // dbg!(ship_state.state.clone());
 
+        // if ship.is_in_transit() {
+        //     if ship.did_arrive() {
+
+        //     }
+        //     continue;
+        // }
+
+
         if ship_state.is_idle() || ship.is_in_transit() {
             // tracing::trace!("ship {} is idle or in transit", ship.symbol);
-            return;
+            continue;
         }
 
         if ship.cargo.units > 0 {
@@ -45,8 +53,7 @@ pub(crate) fn update_ships(
             if highest_sell_waypoint != ship.nav.waypoint_symbol {
                 let nav = st_client::move_ship(&mut ship, highest_sell_waypoint.clone());
                 match nav {
-                    Ok(nav) => {
-                        ship.nav = nav.clone();
+                    Ok(_) => {
                         ship_selected_event.send(ShipSelected(ship_entity));
                     }
                     Err(e) => {
@@ -55,7 +62,7 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
-                match st_client::sell_items(&ship, inventory.symbol.clone(), inventory.units) {
+                match st_client::sell_items(&mut ship, inventory.symbol.clone(), inventory.units) {
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
                         ship.cargo.units -= purchase_response.transaction.units;
@@ -67,7 +74,7 @@ pub(crate) fn update_ships(
                 }
             }
 
-            return;
+            continue;
         }
 
         if ship_state.has_to_find_new_item_to_purchase() {
@@ -77,8 +84,7 @@ pub(crate) fn update_ships(
             if item_to_purchase.purchase_waypoint != ship.nav.waypoint_symbol {
                 let nav = st_client::move_ship(&mut ship, item_to_purchase.purchase_waypoint.clone());
                 match nav {
-                    Ok(nav) => {
-                        ship.nav = nav.clone();
+                    Ok(_) => {
                         ship_selected_event.send(ShipSelected(ship_entity));
                     }
                     Err(e) => {
@@ -87,7 +93,7 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
-                match st_client::buy_items(&ship, &item_to_purchase) {
+                match st_client::buy_items(&mut ship, &item_to_purchase) {
                     Ok(purchase_response) => {
                         ship.cargo.add_units(purchase_response.transaction.units);
                         ship.cargo.add_inventory_item(Inventory {
@@ -101,7 +107,7 @@ pub(crate) fn update_ships(
                     }
                 }
             }
-            return;
+            continue;
         }
     }
 }

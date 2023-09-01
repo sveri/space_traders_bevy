@@ -139,6 +139,8 @@ impl Ship {
     pub(crate) fn is_docked(&self) -> bool { self.nav.status == FlightStatus::DOCKED }
 
     pub(crate) fn get_current_waypoint(&self) -> String { self.nav.waypoint_symbol.clone() }
+
+    pub(crate) fn must_refuel(&self) -> bool { self.fuel.current < 200 }
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -150,6 +152,8 @@ pub(crate) struct NavWrapper {
 
 pub(crate) struct Nav {
     pub(crate) status: FlightStatus,
+    #[serde(alias = "systemSymbol")]
+    pub(crate) system_symbol: String,
     #[serde(alias = "waypointSymbol")]
     pub(crate) waypoint_symbol: String,
     #[serde(alias = "flightMode")]

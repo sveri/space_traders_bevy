@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     game::{
         components::Market,
-        ship::components::{BestItemToTrade, Ship, ShipState, Inventory, FlightStatus, FlightMode},
+        ship::components::{BestItemToTrade, FlightMode, FlightStatus, Inventory, Ship, ShipState},
     },
     st_client,
     ui::hud::components::ErrorText,
@@ -24,9 +24,9 @@ pub(crate) fn update_ships(
         if ship.is_in_transit() && ship.has_arrived_at_destionation() {
             ship.nav.status = FlightStatus::IN_ORBIT;
             ship.nav.flight_mode = FlightMode::CRUISE;
+            
             continue;
         }
-
 
         if ship_state.is_idle() || ship.is_in_transit() {
             // tracing::trace!("ship {} is idle or in transit", ship.symbol);
@@ -61,6 +61,7 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
+                maintenance(&mut ship, &mut error_text);
                 match st_client::sell_items(&mut ship, inventory.symbol.clone(), inventory.units) {
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
@@ -92,6 +93,8 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
+                maintenance(&mut ship, &mut error_text);
+
                 match st_client::buy_items(&mut ship, &item_to_purchase) {
                     Ok(purchase_response) => {
                         ship.cargo.add_units(purchase_response.transaction.units);
@@ -109,6 +112,31 @@ pub(crate) fn update_ships(
             continue;
         }
     }
+}
+
+fn maintenance(ship: &mut Ship, error_text: &mut Query<&mut Text, With<ErrorText>>) {
+    // do maintenance before buying
+    if ship.must_refuel() {
+        match st_client::refuel(ship) {
+            Ok(_) => {
+                tracing::trace!("refueled ship");
+            }
+            Err(e) => {
+                tracing::error!("Error: Unable to refuel: {e}");
+                error_text.single_mut().sections[0].value = format!("Error: Unable to refuel: {e}").to_string();
+            }
+        }
+    }
+
+    // match st_client::get_market_data(&ship.nav.system_symbol, &ship.nav.waypoint_symbol) {
+    //     Ok(_) => {
+    //         tracing::trace!("Updated market data at {}", &ship.nav.waypoint_symbol);
+    //     }
+    //     Err(e) => {
+    //         tracing::error!("Error: Unable to get market data: {e}");
+    //         error_text.single_mut().sections[0].value = format!("Error: Unable to get market data: {e}").to_string();
+    //     }
+    // }
 }
 
 #[derive(Debug)]

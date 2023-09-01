@@ -10,7 +10,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::game::{
     components::Market,
-    ship::components::{Nav, NavWrapper, Ship, BestItemToTrade, PurchaseSellResponse, FlightStatus},
+    ship::components::{Nav, NavWrapper, Ship, BestItemToTrade, PurchaseSellResponse, FlightStatus, Fuel},
     waypoint::components::Waypoints,
 };
 
@@ -179,6 +179,37 @@ pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Res
     )?;
     Ok(resp)
 }
+
+#[derive(Serialize, Debug)]
+struct FuelPostBody {
+    units: i32
+}
+
+#[derive(Deserialize, Debug)]
+struct RefuelResponse {
+    fuel: Fuel
+}
+
+pub(crate) fn refuel(ship: &mut Ship) -> Result<()> {
+
+    if ship.is_in_orbit() {
+        dock_ship(ship)?;
+    }
+
+    let body = FuelPostBody {units: 800};
+    match send_post_with_error(
+        format!("https://api.spacetraders.io/v2/my/ships/{}/refuel", ship.symbol).as_str(),
+        serde_json::to_string(&body).unwrap(),
+    ) {
+        Ok(resp) => {
+            let fuel: GenericResponse<RefuelResponse> = serde_json::from_str(&resp)?;
+            ship.fuel.current = fuel.data.fuel.current;
+            Ok(())
+        }
+        Err(err) => Err(err),
+    }
+}
+
 
 pub(crate) fn send_get_with_response_type<T: DeserializeOwned>(url: &str) -> Result<T> {
     let client = reqwest::blocking::Client::new();

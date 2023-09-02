@@ -8,10 +8,14 @@ use bevy::{
     app::PluginGroupBuilder, log::LogPlugin, prelude::*, time::common_conditions::on_timer, window::PresentMode,
     winit::WinitSettings,
 };
+use bevy_pancam::{PanCam, PanCamPlugin};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_picking::{prelude::RaycastPickCamera, DefaultPickingPlugins};
 use bevy_save::{AppSaveableExt, SavePlugins, WorldSaveableExt};
-use game::{components::{ImportExport, Market, TradeGood, Transaction}, ship::components::{ShipState, Ship}};
+use game::{
+    components::{ImportExport, Market, TradeGood, Transaction},
+    ship::components::Ship,
+};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Component)]
@@ -20,7 +24,12 @@ struct Person;
 fn setup_camera(mut commands: Commands) {
     let mut bundle = Camera2dBundle::default();
     bundle.projection.scale = 0.134;
-    commands.spawn((bundle, crate::ui::controls::components::MainCamera, RaycastPickCamera::default(), Name::new("Main Camera".to_string())));
+    commands.spawn((
+        bundle,
+        crate::ui::controls::components::MainCamera,
+        RaycastPickCamera::default(),        
+        Name::new("Main Camera".to_string()),
+    )).insert(PanCam::default());
 }
 
 fn save_world(world: &World) { world.save("space_traders").expect("Failed to save"); }
@@ -54,11 +63,15 @@ impl Plugin for SavePlugin {
     }
 }
 
+
 struct MainPlugin;
 
 impl Plugin for MainPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((game::GamePlugin, ui::UiPlugin, SavePlugin)).add_systems(Startup, setup_camera);
+        app.add_plugins((game::GamePlugin, ui::UiPlugin, SavePlugin))
+            // .add_plugins(PanOrbitCameraPlugin)
+            .add_plugins( PanCamPlugin::default())
+            .add_systems(Startup, setup_camera);
     }
 }
 
@@ -123,7 +136,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }),
             MainPlugin,
             DebugPlugin,
-        ))        
+        ))
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_plugins(DefaultPickingPlugins)
         // .add_plugins((LogDiagnosticsPlugin::default(), FrameTimeDiagnosticsPlugin, bevy_framepace::FramepacePlugin))

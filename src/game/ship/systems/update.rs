@@ -52,6 +52,8 @@ pub(crate) fn update_ships(
             }
 
             if highest_sell_waypoint != ship.nav.waypoint_symbol {
+                refuel(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+
                 let nav = st_client::move_ship(&mut ship, highest_sell_waypoint.clone());
                 match nav {
                     Ok(_) => {
@@ -63,7 +65,7 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
-                maintenance(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+                get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent(ship_entity));
 
                 match st_client::sell_items(&mut ship, inventory.symbol.clone(), inventory.units) {
                     Ok(purchase_response) => {
@@ -82,6 +84,8 @@ pub(crate) fn update_ships(
         }
 
         if ship_state.has_to_find_new_item_to_purchase() {
+            refuel(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+            
             tracing::trace!("finding new item to purchase");
             let item_to_purchase = find_new_item_to_purchase(markets_query.iter().cloned().collect::<Vec<Market>>());
             tracing::trace!("found item_to_purchase: {:?}", item_to_purchase);
@@ -97,7 +101,8 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
-                maintenance(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+                get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent(ship_entity));
+                refuel(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
 
                 match st_client::buy_items(&mut ship, &item_to_purchase) {
                     Ok(purchase_response) => {
@@ -119,15 +124,12 @@ pub(crate) fn update_ships(
     }
 }
 
-fn maintenance(
-    ship: &mut Ship, ship_entity: Entity, error_text: &mut Query<&mut Text, With<ErrorText>>,
-    get_market_at_ship_location_event: &mut EventWriter<GetMarketAtShipLocationEvent>,
+fn refuel(
+    ship: &mut Ship, error_text: &mut Query<&mut Text, With<ErrorText>>,
 ) {
     // do maintenance before buying
 
-    // mut my_events: EventWriter<MyEvent>,
-
-    get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent(ship_entity));
+    // mut my_events: EventWriter<MyEvent>,    
 
     if ship.must_refuel() {
         match st_client::refuel(ship) {

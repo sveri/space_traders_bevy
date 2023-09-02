@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{PickableBundle, prelude::{RaycastPickTarget, Pointer, On, Click}};
-use tracing_subscriber::fmt::format;
 
-use crate::{st_client, game::waypoint::components::Waypoint};
+use crate::st_client;
 
 use super::events::WaypointSelected;
 
@@ -14,9 +13,9 @@ pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServe
             waypoint.to_owned(),
             SpriteBundle {
                 transform: Transform::from_xyz(waypoint.x, waypoint.y, 0.0),
-                texture: asset_server.load("planets/planet02.png"),
+                texture: asset_server.load("planets/planet09.png"),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(10.0, 10.0)),
+                    custom_size: Some(Vec2::new(2.0, 2.0)),
                     ..default()
                 },
                 ..default()

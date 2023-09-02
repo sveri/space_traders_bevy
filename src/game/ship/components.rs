@@ -1,3 +1,4 @@
+#![crate_name = "doc"]
 #![allow(dead_code)]
 #![allow(clippy::upper_case_acronyms)]
 #![allow(non_camel_case_types)]
@@ -84,7 +85,6 @@ pub(crate) struct Ship {
 }
 
 impl Ship {
-    pub(crate) fn get_display_size(&self) -> (f32, f32) { (2., 4.) }
 
     pub(crate) fn has_arrived_at_destionation(&self) -> bool {
         let utc: DateTime<Utc> = Utc::now();
@@ -96,24 +96,17 @@ impl Ship {
         false
     }
 
+    /// returns the position calculated from the departure and destination coordinates
     pub(crate) fn get_position(&self) -> Vec3 {
         // ship arrival and destination are the same
         if self.nav.route.departure.symbol == self.nav.route.destination.symbol {
             tracing::trace!("ship {}, is at its destination", self.symbol);
-            Vec3 {
-                x: self.nav.route.departure.x,
-                y: self.nav.route.departure.y,
-                z: 1.0,
-            }
+            Ship::get_shifted_position(self.nav.route.destination.x, self.nav.route.destination.y)
         } else {
             // ship arrived at destination
             if self.has_arrived_at_destionation() {
                 tracing::trace!("ship {} arrived at destination", self.symbol);
-                Vec3 {
-                    x: self.nav.route.destination.x,
-                    y: self.nav.route.destination.y,
-                    z: 1.0,
-                }
+                Ship::get_shifted_position(self.nav.route.destination.x, self.nav.route.destination.y)
             }
             // ship is moving from departure to destination
             else {
@@ -124,6 +117,15 @@ impl Ship {
                     z: 1.0,
                 }
             }
+        }
+    }
+
+    /// moves the ship a bit underneath the planet, so it's not displayed directly on top
+    fn get_shifted_position(x: f32, y: f32) -> Vec3 {
+        Vec3 {
+            x: x + 1.1,
+            y: y - 1.1,
+            z: 1.0,
         }
     }
 

@@ -17,7 +17,7 @@ use super::events::ShipSelected;
 pub(crate) fn update_ships(
     mut ships: Query<(&mut Transform, &mut Ship, &ShipState, Entity)>, markets_query: Query<&Market>,
     mut ship_selected_event: EventWriter<ShipSelected>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    mut get_market_at_ship_location_event: EventWriter<GetMarketAtShipLocationEvent>
+    mut get_market_at_ship_location_event: EventWriter<GetMarketAtShipLocationEvent>,
 ) {
     for (mut transform, mut ship, ship_state, ship_entity) in ships.iter_mut() {
         transform.translation = ship.get_position();
@@ -34,6 +34,9 @@ pub(crate) fn update_ships(
             // tracing::trace!("ship {} is idle or in transit", ship.symbol);
             continue;
         }
+
+        
+        maintenance(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
 
         if ship.cargo.units > 0 {
             let inventory_list = ship.cargo.get_inventory();
@@ -63,7 +66,6 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
-                maintenance(&mut ship, &mut error_text, &mut get_market_at_ship_location_event);
                 match st_client::sell_items(&mut ship, inventory.symbol.clone(), inventory.units) {
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
@@ -96,7 +98,6 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
-                maintenance(&mut ship, &mut error_text, &mut get_market_at_ship_location_event);
 
                 match st_client::buy_items(&mut ship, &item_to_purchase) {
                     Ok(purchase_response) => {
@@ -119,25 +120,27 @@ pub(crate) fn update_ships(
 }
 
 fn maintenance(
-    ship: &mut Ship, error_text: &mut Query<&mut Text, With<ErrorText>>,
+    ship: &mut Ship, ship_entity: Entity, error_text: &mut Query<&mut Text, With<ErrorText>>,
     get_market_at_ship_location_event: &mut EventWriter<GetMarketAtShipLocationEvent>,
 ) {
     // do maintenance before buying
 
     // mut my_events: EventWriter<MyEvent>,
 
-    get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent { ship: ship.clone() });
+    get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent(ship_entity));
 
     if ship.must_refuel() {
         match st_client::refuel(ship) {
             Ok(_) => {
-                tracing::trace!("refueled ship");
+                tracing::debug!("refueled ship");
             }
             Err(e) => {
                 tracing::error!("Error: Unable to refuel: {e}");
                 error_text.single_mut().sections[0].value = format!("Error: Unable to refuel: {e}").to_string();
             }
         }
+    } else {
+        tracing::debug!("Ship has enough fuel");
     }
 
     // match st_client::get_market_data(&ship.nav.system_symbol, &ship.nav.waypoint_symbol) {

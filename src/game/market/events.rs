@@ -7,18 +7,17 @@ use crate::{
 };
 
 #[derive(Event)]
-pub(crate) struct GetMarketAtShipLocationEvent {
-    pub(crate) ship: Ship,
-}
+pub(crate) struct GetMarketAtShipLocationEvent(pub(crate) Entity);
 
 pub(super) fn handle_get_market_clicked_for_ship_event(
-    mut commands: Commands, mut events: EventReader<GetMarketAtShipLocationEvent>,
+    mut commands: Commands, mut events: EventReader<GetMarketAtShipLocationEvent>, mut ships: Query<&mut Ship>,
     existing_markets_query: Query<(Entity, &Market), With<Market>>, mut error_text: Query<&mut Text, With<ErrorText>>,
+
 ) {
     for my_event in events.iter() {
-        let ship = &my_event.ship;
+        let mut ship = ships.get_mut(my_event.0).unwrap();
 
-        let market_details = st_client::get_market_data(&ship.nav.system_symbol, &ship.nav.waypoint_symbol);
+        let market_details = st_client::get_market_data(&mut ship);
         match market_details {
             Ok(market_data) => {
                 for (existing_market_entity, existing_market) in existing_markets_query.iter() {

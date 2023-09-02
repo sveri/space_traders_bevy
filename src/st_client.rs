@@ -16,8 +16,8 @@ use crate::game::{
 
 #[derive(thiserror::Error, Debug)]
 enum SpaceTradersApiError {
-    #[error("Unwrapping json failed: {0}")]
-    JsonUnwrapError(#[from] serde_json::Error),
+    #[error("Unwrapping json failed: {error}, response: {response}")]
+    JsonUnwrapError{ error: serde_json::Error, response: String},
     #[error("Bad Request: {0}")]
     BadRequestError(String),
     // JsonUnwrapError(String),
@@ -173,9 +173,18 @@ pub(crate) fn sell_items(ship: &mut Ship, sell_symbol: String, units: i32) -> Re
     }
 }
 
-pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
+// pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
+// pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
+pub(crate) fn get_market_data(ship: &mut Ship) -> Result<Market> {
+
+    if ship.is_in_orbit() {
+        dock_ship(ship)?;
+    }
+
+    tracing::debug!("Getting market data at system: {} and waypoint: {}", ship.nav.system_symbol, ship.nav.waypoint_symbol);
+
     let resp: Market = send_get_with_response_type(
-        format!("https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market", system_symbol, waypoint_symbol).as_str(),
+        format!("https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market", ship.nav.system_symbol, ship.nav.waypoint_symbol).as_str(),
     )?;
     Ok(resp)
 }
@@ -218,7 +227,8 @@ pub(crate) fn send_get_with_response_type<T: DeserializeOwned>(url: &str) -> Res
     let client = reqwest::blocking::Client::new();
     let r = send_with_header(client.get(url))?.text()?;
     serde_json::from_str::<GenericResponse<T>>(&r)
-        .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e))), |resp| Ok(resp.data))
+        .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError{error: e, response: r.to_string()})), |resp| Ok(resp.data))
+        // .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e, r))), |resp| Ok(resp.data))
 }
 
 pub(crate) fn send_get(url: &str) -> Result<String> {

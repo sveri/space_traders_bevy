@@ -121,10 +121,10 @@ pub(crate) fn handle_move_ship(
 
 pub(crate) fn handle_get_market_clicked(
     mut commands: Commands, selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>, ships: Query<&Ship>,
+    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>, mut ships: Query<&mut Ship>,
 ) {
     if let Some(selected_ship) = selected_ship_query.0 {
-        let ship = ships.get(selected_ship).unwrap();
+        let mut ship = ships.get_mut(selected_ship).unwrap();
         if ship.nav.status == FlightStatus::IN_TRANSIT {
             error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
             return;
@@ -138,7 +138,7 @@ pub(crate) fn handle_get_market_clicked(
             return;
         }
 
-        let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
+        let market_details = st_client::get_market_data(&mut ship);
         match market_details {
             Ok(market_data) => {
                 for (existing_market_entity, existing_market) in existing_markets_query.iter() {
@@ -161,47 +161,47 @@ pub(crate) fn handle_get_market_clicked(
     }
 }
 
-pub(crate) fn handle_get_market_clicked_for_ship(
-    mut commands: Commands, selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>, ships: Query<&Ship>,
-) {
-    if let Some(selected_ship) = selected_ship_query.0 {
-        let ship = ships.get(selected_ship).unwrap();
-        if ship.nav.status == FlightStatus::IN_TRANSIT {
-            error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
-            return;
-        }
+// pub(crate) fn handle_get_market_clicked_for_ship(
+//     mut commands: Commands, selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
+//     waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>, ships: Query<&Ship>,
+// ) {
+//     if let Some(selected_ship) = selected_ship_query.0 {
+//         let ship = ships.get(selected_ship).unwrap();
+//         if ship.nav.status == FlightStatus::IN_TRANSIT {
+//             error_text.single_mut().sections[0].value = "Error: Ship must not be in transit to get market data".to_string();
+//             return;
+//         }
 
-        let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
-        let found_waypoint = found_waypoints.get(0).unwrap();
+//         let found_waypoints = waypoint_query.iter().filter(|w| w.symbol == ship.nav.waypoint_symbol).collect::<Vec<&Waypoint>>();
+//         let found_waypoint = found_waypoints.get(0).unwrap();
 
-        if !found_waypoint.has_marketplace() {
-            error_text.single_mut().sections[0].value = "Error: Waypoint has no marketplace".to_string();
-            return;
-        }
+//         if !found_waypoint.has_marketplace() {
+//             error_text.single_mut().sections[0].value = "Error: Waypoint has no marketplace".to_string();
+//             return;
+//         }
 
-        let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
-        match market_details {
-            Ok(market_data) => {
-                for (existing_market_entity, existing_market) in existing_markets_query.iter() {
-                    if existing_market.symbol == market_data.symbol {
-                        commands.entity(existing_market_entity).despawn_recursive();
-                        break;
-                    }
-                }
-                println!("market data: {}", serde_json::to_string_pretty(&market_data).unwrap());
-                let market_symbol = market_data.symbol.clone();
-                commands.spawn((market_data, Name::new(format!("Market {}", market_symbol))));
-            }
-            Err(e) => {
-                println!("{e}");
-                error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
-            }
-        }
-    } else {
-        error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
-    }
-}
+//         let market_details = st_client::get_market_data(&found_waypoint.system_symbol, &found_waypoint.symbol);
+//         match market_details {
+//             Ok(market_data) => {
+//                 for (existing_market_entity, existing_market) in existing_markets_query.iter() {
+//                     if existing_market.symbol == market_data.symbol {
+//                         commands.entity(existing_market_entity).despawn_recursive();
+//                         break;
+//                     }
+//                 }
+//                 println!("market data: {}", serde_json::to_string_pretty(&market_data).unwrap());
+//                 let market_symbol = market_data.symbol.clone();
+//                 commands.spawn((market_data, Name::new(format!("Market {}", market_symbol))));
+//             }
+//             Err(e) => {
+//                 println!("{e}");
+//                 error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
+//             }
+//         }
+//     } else {
+//         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
+//     }
+// }
 
 
 pub(crate) fn handle_autotrade_clicked(

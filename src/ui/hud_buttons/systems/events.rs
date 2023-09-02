@@ -147,12 +147,12 @@ pub(crate) fn handle_get_market_clicked(
                         break;
                     }
                 }
-                println!("market data: {}", serde_json::to_string_pretty(&market_data).unwrap());
+                trace!("market data: {}", serde_json::to_string_pretty(&market_data).unwrap());
                 let market_symbol = market_data.symbol.clone();
                 commands.spawn((market_data, Name::new(format!("Market {}", market_symbol))));
             }
             Err(e) => {
-                println!("{e}");
+                error!("{e}");
                 error_text.single_mut().sections[0].value = format!("Error: Unable to read market data {e}.").to_string();
             }
         }

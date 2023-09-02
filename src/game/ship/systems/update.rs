@@ -128,9 +128,6 @@ fn refuel(
     ship: &mut Ship, error_text: &mut Query<&mut Text, With<ErrorText>>,
 ) {
     // do maintenance before buying
-
-    // mut my_events: EventWriter<MyEvent>,    
-
     if ship.must_refuel() {
         match st_client::refuel(ship) {
             Ok(_) => {
@@ -144,16 +141,6 @@ fn refuel(
     } else {
         debug!("Ship has enough fuel");
     }
-
-    // match st_client::get_market_data(&ship.nav.system_symbol, &ship.nav.waypoint_symbol) {
-    //     Ok(_) => {
-    //         tracing::trace!("Updated market data at {}", &ship.nav.waypoint_symbol);
-    //     }
-    //     Err(e) => {
-    //         tracing::error!("Error: Unable to get market data: {e}");
-    //         error_text.single_mut().sections[0].value = format!("Error: Unable to get market data: {e}").to_string();
-    //     }
-    // }
 }
 
 #[derive(Debug)]

@@ -76,6 +76,7 @@ impl Plugin for MainPlugin {
 }
 
 struct DebugPlugin;
+
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(WorldInspectorPlugin::new())
@@ -135,7 +136,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ..default()
                 }),
             MainPlugin,
-            DebugPlugin,
+            // DebugPlugin,
         ))
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_plugins(DefaultPickingPlugins)

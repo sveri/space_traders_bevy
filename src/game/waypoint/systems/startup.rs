@@ -15,7 +15,7 @@ pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServe
                 transform: Transform::from_xyz(waypoint.x, waypoint.y, 0.0),
                 texture: asset_server.load("planets/planet09.png"),
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(2.0, 2.0)),
+                    custom_size: Some(Vec2::new(7.0, 7.0)),
                     ..default()
                 },
                 ..default()

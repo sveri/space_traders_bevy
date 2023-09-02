@@ -1,4 +1,3 @@
-#![crate_name = "doc"]
 #![allow(dead_code)]
 #![allow(clippy::upper_case_acronyms)]
 #![allow(non_camel_case_types)]
@@ -10,12 +9,6 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 use crate::game::components::Transaction;
-
-// #[derive(Debug, Deserialize, Component, Clone)]
-// pub(crate) struct ShipWrapper {
-//     ship: Ship,
-//     state: String
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum ShipStateEnum {
@@ -123,8 +116,8 @@ impl Ship {
     /// moves the ship a bit underneath the planet, so it's not displayed directly on top
     fn get_shifted_position(x: f32, y: f32) -> Vec3 {
         Vec3 {
-            x: x + 1.1,
-            y: y - 1.1,
+            x: x + 3.1,
+            y: y - 3.1,
             z: 1.0,
         }
     }

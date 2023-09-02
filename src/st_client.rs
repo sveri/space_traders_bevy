@@ -206,7 +206,10 @@ pub(crate) fn refuel(ship: &mut Ship) -> Result<()> {
             ship.fuel.current = fuel.data.fuel.current;
             Ok(())
         }
-        Err(err) => Err(err),
+        Err(err) => {
+            tracing::error!("Refuel failed: {}", err);
+            Err(err)
+        },
     }
 }
 
@@ -236,7 +239,7 @@ pub(crate) fn send_post_with_error(url: &str, body: String) -> Result<String> {
     let client = reqwest::blocking::Client::new();
     match send_with_header(client.post(url).body(body)) {
         Ok(resp) => {
-            if &resp.status() == &StatusCode::BAD_REQUEST {
+            if resp.status() == StatusCode::BAD_REQUEST {
                 let bad_request_response: BadRequestResponse = serde_json::from_str(&resp.text().unwrap()).unwrap();
                 tracing::error!("Error: {}", &bad_request_response.error.message);
                 Err(anyhow!(SpaceTradersApiError::BadRequestError(bad_request_response.error.message)))

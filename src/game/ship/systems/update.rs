@@ -68,6 +68,7 @@ pub(crate) fn update_ships(
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
                         ship.cargo.units -= purchase_response.transaction.units;
+                        tracing::debug!("Sold {} units of {}", purchase_response.transaction.units, inventory.symbol);
                         tracing::trace!("sell_response: {:?}", purchase_response);
                     }
                     Err(e) => {
@@ -104,6 +105,7 @@ pub(crate) fn update_ships(
                             symbol: item_to_purchase.item.clone(),
                             units: purchase_response.transaction.units,
                         });
+                        tracing::debug!("Bought {} units of {}", purchase_response.transaction.units, item_to_purchase.item);
                         tracing::trace!("purchase_response: {:?}", purchase_response);
                     }
                     Err(e) => {

@@ -52,7 +52,7 @@ pub(crate) fn update_ships(
             }
 
             if highest_sell_waypoint != ship.nav.waypoint_symbol {
-                refuel(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+                refuel(&mut ship, &mut error_text);
 
                 let nav = st_client::move_ship(&mut ship, highest_sell_waypoint.clone());
                 match nav {
@@ -63,7 +63,7 @@ pub(crate) fn update_ships(
                         error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
                     }
                 }
-                tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
+                trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
                 get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent(ship_entity));
 
@@ -71,8 +71,8 @@ pub(crate) fn update_ships(
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
                         ship.cargo.units -= purchase_response.transaction.units;
-                        tracing::debug!("Sold {} units of {}", purchase_response.transaction.units, inventory.symbol);
-                        tracing::trace!("sell_response: {:?}", purchase_response);
+                        debug!("Sold {} units of {}", purchase_response.transaction.units, inventory.symbol);
+                        trace!("sell_response: {:?}", purchase_response);
                     }
                     Err(e) => {
                         error_text.single_mut().sections[0].value = format!("Error: Unable to sell: {e}").to_string();
@@ -84,11 +84,11 @@ pub(crate) fn update_ships(
         }
 
         if ship_state.has_to_find_new_item_to_purchase() {
-            refuel(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+            refuel(&mut ship, &mut error_text);
             
-            tracing::trace!("finding new item to purchase");
+            trace!("finding new item to purchase");
             let item_to_purchase = find_new_item_to_purchase(markets_query.iter().cloned().collect::<Vec<Market>>());
-            tracing::trace!("found item_to_purchase: {:?}", item_to_purchase);
+            trace!("found item_to_purchase: {:?}", item_to_purchase);
             if item_to_purchase.purchase_waypoint != ship.nav.waypoint_symbol {
                 let nav = st_client::move_ship(&mut ship, item_to_purchase.purchase_waypoint.clone());
                 match nav {
@@ -99,10 +99,10 @@ pub(crate) fn update_ships(
                         error_text.single_mut().sections[0].value = format!("Error: Unable to move ship: {e}").to_string();
                     }
                 }
-                tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
+                trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
                 get_market_at_ship_location_event.send(GetMarketAtShipLocationEvent(ship_entity));
-                refuel(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+                refuel(&mut ship, &mut error_text);
 
                 match st_client::buy_items(&mut ship, &item_to_purchase) {
                     Ok(purchase_response) => {
@@ -111,11 +111,11 @@ pub(crate) fn update_ships(
                             symbol: item_to_purchase.item.clone(),
                             units: purchase_response.transaction.units,
                         });
-                        tracing::debug!("Bought {} units of {}", purchase_response.transaction.units, item_to_purchase.item);
-                        tracing::trace!("purchase_response: {:?}", purchase_response);
+                        debug!("Bought {} units of {}", purchase_response.transaction.units, item_to_purchase.item);
+                        trace!("purchase_response: {:?}", purchase_response);
                     }
                     Err(e) => {
-                        error_text.single_mut().sections[0].value = format!("Error: Unable purchasep: {e}").to_string();
+                        error_text.single_mut().sections[0].value = format!("Error: Unable to purchase: {e}").to_string();
                     }
                 }
             }
@@ -134,15 +134,15 @@ fn refuel(
     if ship.must_refuel() {
         match st_client::refuel(ship) {
             Ok(_) => {
-                tracing::debug!("refueled ship");
+                debug!("refueled ship");
             }
             Err(e) => {
-                tracing::error!("Error: Unable to refuel: {e}");
+                error!("Error: Unable to refuel: {e}");
                 error_text.single_mut().sections[0].value = format!("Error: Unable to refuel: {e}").to_string();
             }
         }
     } else {
-        tracing::debug!("Ship has enough fuel");
+        debug!("Ship has enough fuel");
     }
 
     // match st_client::get_market_data(&ship.nav.system_symbol, &ship.nav.waypoint_symbol) {

@@ -10,8 +10,6 @@ use self::systems::{
     update::update_ships,
 };
 
-use super::market::events::GetMarketAtShipLocationEvent;
-
 pub(crate) struct ShipPlugin;
 
 impl Plugin for ShipPlugin {

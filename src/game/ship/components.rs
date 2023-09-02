@@ -7,7 +7,6 @@ use std::fmt::Display;
 use bevy::prelude::*;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use tracing::Value;
 
 use crate::game::components::Transaction;
 

@@ -1,6 +1,6 @@
-use std::{env, fmt::Display};
+use std::env;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use reqwest::{
     blocking::{RequestBuilder, Response},
     StatusCode,
@@ -10,7 +10,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::game::{
     components::Market,
-    ship::components::{Nav, NavWrapper, Ship, BestItemToTrade, PurchaseSellResponse, FlightStatus, Fuel},
+    ship::components::{Nav, NavWrapper, Ship, BestItemToTrade, PurchaseSellResponse, Fuel},
     waypoint::components::Waypoints,
 };
 
@@ -31,7 +31,7 @@ pub(crate) struct BadRequestResponse {
 #[derive(Debug, Deserialize)]
 pub(crate) struct BadRequestErrorError {
     pub(crate) message: String,
-    pub(crate) code: i32,
+    // pub(crate) code: i32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -173,8 +173,6 @@ pub(crate) fn sell_items(ship: &mut Ship, sell_symbol: String, units: i32) -> Re
     }
 }
 
-// pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
-// pub(crate) fn get_market_data(system_symbol: &str, waypoint_symbol: &str) -> Result<Market> {
 pub(crate) fn get_market_data(ship: &mut Ship) -> Result<Market> {
 
     if ship.is_in_orbit() {
@@ -235,14 +233,6 @@ pub(crate) fn send_get(url: &str) -> Result<String> {
     let client = reqwest::blocking::Client::new();
     let r = send_with_header(client.get(url))?.text()?;
     Ok(r)
-}
-
-pub(crate) fn send_post(url: &str, body: String) -> String {
-    let client = reqwest::blocking::Client::new();
-    match send_with_header(client.post(url).body(body)) {
-        Ok(resp) => resp.text().unwrap(),
-        Err(err) => panic!("Error: {}", err),
-    }
 }
 
 pub(crate) fn send_post_with_error(url: &str, body: String) -> Result<String> {

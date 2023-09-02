@@ -35,9 +35,6 @@ pub(crate) fn update_ships(
             continue;
         }
 
-        
-        maintenance(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
-
         if ship.cargo.units > 0 {
             let inventory_list = ship.cargo.get_inventory();
             let inventory = inventory_list.get(0).unwrap();
@@ -66,6 +63,8 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to sell waypoint: {}", highest_sell_waypoint);
             } else {
+                maintenance(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
+
                 match st_client::sell_items(&mut ship, inventory.symbol.clone(), inventory.units) {
                     Ok(purchase_response) => {
                         ship.cargo.set_inventory(inventory_list[1..inventory_list.len()].to_vec());
@@ -98,6 +97,7 @@ pub(crate) fn update_ships(
                 }
                 tracing::trace!("moving ship to purchase waypoint: {}", item_to_purchase.purchase_waypoint);
             } else {
+                maintenance(&mut ship, ship_entity, &mut error_text, &mut get_market_at_ship_location_event);
 
                 match st_client::buy_items(&mut ship, &item_to_purchase) {
                     Ok(purchase_response) => {

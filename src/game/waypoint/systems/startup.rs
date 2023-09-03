@@ -23,7 +23,7 @@ pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServe
         commands.spawn((
             waypoint.to_owned(),
             SpriteBundle {
-                transform: Transform::from_xyz(waypoint.x, waypoint.y, 0.0),
+                transform: Transform::from_xyz(waypoint.get_position().x, waypoint.get_position().y, 0.0),
                 texture: asset,
                 sprite: Sprite {
                     custom_size: sprite_size,

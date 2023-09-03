@@ -26,6 +26,13 @@ impl Waypoint {
     }
 
     pub(crate) fn has_marketplace(&self) -> bool { self.traits.iter().any(|t| t.symbol == WaypointTraitSymbol::MARKETPLACE) }
+
+    pub(crate) fn get_position(&self) -> Vec3 { 
+        match self.waypoint_type {
+            WaypointType::ORBITAL_STATION => Vec3::new(self.x + 3., self.y + 3., 0.0),
+            _ => Vec3::new(self.x, self.y, 0.0),
+        }
+    }
 }
 
 #[allow(non_camel_case_types, clippy::upper_case_acronyms)]

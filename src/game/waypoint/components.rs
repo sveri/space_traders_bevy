@@ -7,9 +7,11 @@ pub(crate) type Waypoints = Vec<Waypoint>;
 
 #[derive(Debug, Deserialize, Component, Clone)]
 pub(crate) struct Waypoint {
-    #[serde(alias = "systemSymbol")]
-    pub(crate) system_symbol: String,
+    // #[serde(alias = "systemSymbol")]
+    // pub(crate) system_symbol: String,
     pub(crate) symbol: String,
+    #[serde(alias = "type")]
+    pub(crate) waypoint_type: WaypointType,
     pub(crate) x: f32,
     pub(crate) y: f32,
     traits: Vec<WaypointTrait>,
@@ -23,9 +25,21 @@ impl Waypoint {
         ts.iter().map(|t| t.name.clone()).collect::<Vec<String>>().join(", ")
     }
 
-    pub(crate) fn has_marketplace(&self) -> bool {
-        self.traits.iter().any(|t| t.symbol == WaypointTraitSymbol::MARKETPLACE)
-    }
+    pub(crate) fn has_marketplace(&self) -> bool { self.traits.iter().any(|t| t.symbol == WaypointTraitSymbol::MARKETPLACE) }
+}
+
+#[allow(non_camel_case_types, clippy::upper_case_acronyms)]
+#[derive(Debug, Deserialize, Component, Clone)]
+pub(crate) enum WaypointType {
+    PLANET,
+    GAS_GIANT,
+    MOON,
+    ORBITAL_STATION,
+    JUMP_GATE,
+    ASTEROID_FIELD,
+    NEBULA,
+    DEBRIS_FIELD,
+    GRAVITY_WELL,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -34,8 +48,7 @@ pub(crate) struct WaypointTrait {
     symbol: WaypointTraitSymbol,
 }
 
-
-
+#[allow(non_camel_case_types, clippy::upper_case_acronyms)]
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 pub(crate) enum WaypointTraitSymbol {
     UNCHARTED,
@@ -58,7 +71,6 @@ pub(crate) enum WaypointTraitSymbol {
     STRONG_MAGNETOSPHERE,
     MILITARY_BASE,
     DRY_SEABEDS,
-
 }
 
 impl Display for WaypointTraitSymbol {

@@ -105,7 +105,13 @@ pub(crate) fn dock_ship(ship: &mut Ship) -> Result<String> {
     }
 }
 
-pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<Nav> {
+#[derive(Deserialize, Debug)]
+struct MoveShipResponse {
+    fuel: Fuel,
+    nav: Nav,
+}
+
+pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<()> {
     let navigate = Navigate {
         waypoint_symbol: target_waypoint,
     };
@@ -119,11 +125,12 @@ pub(crate) fn move_ship(ship: &mut Ship, target_waypoint: String) -> Result<Nav>
         serde_json::to_string(&navigate).unwrap(),
     ) {
         Ok(resp) => {
-            let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
-            let msg = format!("moving to response {:?}", nav_wrapper.data.nav);
+            let move_ship_response: GenericResponse<MoveShipResponse> = serde_json::from_str(&resp)?;
+            let msg = format!("moving to response {:?}", move_ship_response.data.nav);
             tracing::trace!(msg);
-            ship.nav = nav_wrapper.data.nav.clone();
-            Ok(nav_wrapper.data.nav)
+            ship.nav = move_ship_response.data.nav.clone();
+            ship.fuel = move_ship_response.data.fuel.clone();
+            Ok(())
         }
         Err(err) => Err(err),
     }

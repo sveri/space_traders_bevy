@@ -54,8 +54,7 @@ pub(crate) fn update_ships(
             if highest_sell_waypoint != ship.nav.waypoint_symbol {
                 refuel(&mut ship, &mut error_text);
 
-                let nav = st_client::move_ship(&mut ship, highest_sell_waypoint.clone());
-                match nav {
+                match st_client::move_ship(&mut ship, highest_sell_waypoint.clone()) {
                     Ok(_) => {
                         ship_selected_event.send(ShipSelected(ship_entity));
                     }
@@ -85,13 +84,12 @@ pub(crate) fn update_ships(
 
         if ship_state.has_to_find_new_item_to_purchase() {
             refuel(&mut ship, &mut error_text);
-            
+
             trace!("finding new item to purchase");
             let item_to_purchase = find_new_item_to_purchase(markets_query.iter().cloned().collect::<Vec<Market>>());
             trace!("found item_to_purchase: {:?}", item_to_purchase);
             if item_to_purchase.purchase_waypoint != ship.nav.waypoint_symbol {
-                let nav = st_client::move_ship(&mut ship, item_to_purchase.purchase_waypoint.clone());
-                match nav {
+                match st_client::move_ship(&mut ship, item_to_purchase.purchase_waypoint.clone()) {
                     Ok(_) => {
                         ship_selected_event.send(ShipSelected(ship_entity));
                     }
@@ -124,9 +122,7 @@ pub(crate) fn update_ships(
     }
 }
 
-fn refuel(
-    ship: &mut Ship, error_text: &mut Query<&mut Text, With<ErrorText>>,
-) {
+fn refuel(ship: &mut Ship, error_text: &mut Query<&mut Text, With<ErrorText>>) {
     // do maintenance before buying
     if ship.must_refuel() {
         match st_client::refuel(ship) {

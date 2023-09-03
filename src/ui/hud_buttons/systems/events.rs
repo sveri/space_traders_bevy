@@ -105,8 +105,7 @@ pub(crate) fn handle_move_ship(
 ) {
     if let (Ok(waypoint), Some(selected_ship_entity)) = (selected_waypoint.get_single(), selected_ship_query.0) {
         let mut ship = ships.get_mut(selected_ship_entity).unwrap();
-        let nav = st_client::move_ship(&mut ship, waypoint.waypoint.symbol.to_string());
-        match nav {
+        match st_client::move_ship(&mut ship, waypoint.waypoint.symbol.to_string()) {
             Ok(_) => {
                 ship_selected_event.send(ShipSelected(selected_ship_entity));
             }
@@ -121,7 +120,8 @@ pub(crate) fn handle_move_ship(
 
 pub(crate) fn handle_get_market_clicked(
     mut commands: Commands, selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,
-    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>, mut ships: Query<&mut Ship>,
+    waypoint_query: Query<&Waypoint>, existing_markets_query: Query<(Entity, &Market), With<Market>>,
+    mut ships: Query<&mut Ship>,
 ) {
     if let Some(selected_ship) = selected_ship_query.0 {
         let mut ship = ships.get_mut(selected_ship).unwrap();
@@ -202,7 +202,6 @@ pub(crate) fn handle_get_market_clicked(
 //         error_text.single_mut().sections[0].value = "Error: You must select a ship.".to_string();
 //     }
 // }
-
 
 pub(crate) fn handle_autotrade_clicked(
     selected_ship_query: Res<SelectedShip>, mut error_text: Query<&mut Text, With<ErrorText>>,

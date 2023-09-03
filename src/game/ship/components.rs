@@ -107,7 +107,7 @@ impl Ship {
                 Vec3 {
                     x: (self.nav.route.departure.x + self.nav.route.destination.x) / 2.,
                     y: (self.nav.route.departure.y + self.nav.route.destination.y) / 2.,
-                    z: 1.0,
+                    z: 10.0,
                 }
             }
         }
@@ -118,11 +118,9 @@ impl Ship {
         Vec3 {
             x: x + 3.1,
             y: y - 3.1,
-            z: 1.0,
+            z: 10.0,
         }
     }
-
-    pub(crate) fn get_transform(&self) -> Transform { Transform::from_translation(self.get_position()) }
 
     pub(crate) fn is_in_transit(&self) -> bool { self.nav.status == FlightStatus::IN_TRANSIT }
 

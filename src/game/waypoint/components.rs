@@ -29,7 +29,7 @@ impl Waypoint {
 
     pub(crate) fn get_position(&self) -> Vec3 { 
         match self.waypoint_type {
-            WaypointType::ORBITAL_STATION => Vec3::new(self.x + 4., self.y + 4., 0.0),
+            WaypointType::ORBITAL_STATION => Vec3::new(self.x + 4., self.y + 4., 5.0),
             _ => Vec3::new(self.x, self.y, 0.0),
         }
     }

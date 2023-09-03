@@ -14,7 +14,10 @@ pub(crate) fn add_ships(mut commands: Commands, asset_server: Res<AssetServer>) 
         commands.spawn((
             ship.to_owned(),
             SpriteBundle {
-                transform: ship.get_transform(),
+                transform: Transform {
+                    translation: ship.get_position(),
+                    ..default()
+                },
                 texture: asset_server.load("ships/default_frigate.png"),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(3.0, 3.0)),

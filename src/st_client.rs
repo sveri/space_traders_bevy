@@ -10,14 +10,14 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::game::{
     components::Market,
-    ship::components::{Nav, NavWrapper, Ship, BestItemToTrade, PurchaseSellResponse, Fuel},
+    ship::components::{BestItemToTrade, Fuel, Nav, NavWrapper, PurchaseSellResponse, Ship},
     waypoint::components::Waypoints,
 };
 
 #[derive(thiserror::Error, Debug)]
 enum SpaceTradersApiError {
     #[error("Unwrapping json failed: {error}, response: {response}")]
-    JsonUnwrapError{ error: serde_json::Error, response: String},
+    JsonUnwrapError { error: serde_json::Error, response: String },
     #[error("Bad Request: {0}")]
     BadRequestError(String),
     // JsonUnwrapError(String),
@@ -65,7 +65,7 @@ struct Navigate {
 #[derive(Serialize, Debug)]
 struct PurchaseSell {
     symbol: String,
-    units: i32
+    units: i32,
 }
 
 pub(crate) fn fetch_agent_details() -> AgentDetails {
@@ -84,7 +84,8 @@ pub(crate) fn fetch_waypoints(system_symbol: &str) -> Result<Waypoints> {
 pub(crate) fn orbit_ship(ship: &mut Ship) -> Result<String> {
     // let resp = send_post(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship.symbol).as_str(), "".to_string());
     // Ok(resp)
-    match send_post_with_error(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship.symbol).as_str(), "".to_string()) {
+    match send_post_with_error(format!("https://api.spacetraders.io/v2/my/ships/{}/orbit", ship.symbol).as_str(), "".to_string())
+    {
         Ok(resp) => {
             let nav_wrapper: GenericResponse<NavWrapper> = serde_json::from_str(&resp)?;
             ship.nav = nav_wrapper.data.nav.clone();
@@ -181,7 +182,6 @@ pub(crate) fn sell_items(ship: &mut Ship, sell_symbol: String, units: i32) -> Re
 }
 
 pub(crate) fn get_market_data(ship: &mut Ship) -> Result<Market> {
-
     if ship.is_in_orbit() {
         dock_ship(ship)?;
     }
@@ -189,28 +189,31 @@ pub(crate) fn get_market_data(ship: &mut Ship) -> Result<Market> {
     tracing::debug!("Getting market data at system: {} and waypoint: {}", ship.nav.system_symbol, ship.nav.waypoint_symbol);
 
     let resp: Market = send_get_with_response_type(
-        format!("https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market", ship.nav.system_symbol, ship.nav.waypoint_symbol).as_str(),
+        format!(
+            "https://api.spacetraders.io/v2/systems/{}/waypoints/{}/market",
+            ship.nav.system_symbol, ship.nav.waypoint_symbol
+        )
+        .as_str(),
     )?;
     Ok(resp)
 }
 
 #[derive(Serialize, Debug)]
 struct FuelPostBody {
-    units: i32
+    units: i32,
 }
 
 #[derive(Deserialize, Debug)]
 struct RefuelResponse {
-    fuel: Fuel
+    fuel: Fuel,
 }
 
 pub(crate) fn refuel(ship: &mut Ship) -> Result<()> {
-
     if ship.is_in_orbit() {
         dock_ship(ship)?;
     }
 
-    let body = FuelPostBody {units: 800};
+    let body = FuelPostBody { units: 800 };
     match send_post_with_error(
         format!("https://api.spacetraders.io/v2/my/ships/{}/refuel", ship.symbol).as_str(),
         serde_json::to_string(&body).unwrap(),
@@ -223,17 +226,23 @@ pub(crate) fn refuel(ship: &mut Ship) -> Result<()> {
         Err(err) => {
             tracing::error!("Refuel failed: {}", err);
             Err(err)
-        },
+        }
     }
 }
-
 
 pub(crate) fn send_get_with_response_type<T: DeserializeOwned>(url: &str) -> Result<T> {
     let client = reqwest::blocking::Client::new();
     let r = send_with_header(client.get(url))?.text()?;
-    serde_json::from_str::<GenericResponse<T>>(&r)
-        .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError{error: e, response: r.to_string()})), |resp| Ok(resp.data))
-        // .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e, r))), |resp| Ok(resp.data))
+    serde_json::from_str::<GenericResponse<T>>(&r).map_or_else(
+        |e| {
+            Err(anyhow!(SpaceTradersApiError::JsonUnwrapError {
+                error: e,
+                response: r.to_string()
+            }))
+        },
+        |resp| Ok(resp.data),
+    )
+    // .map_or_else(|e| Err(anyhow!(SpaceTradersApiError::JsonUnwrapError(e, r))), |resp| Ok(resp.data))
 }
 
 pub(crate) fn send_get(url: &str) -> Result<String> {
@@ -259,9 +268,26 @@ pub(crate) fn send_post_with_error(url: &str, body: String) -> Result<String> {
 }
 
 fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
-    req.header("Authorization", format!("Bearer {}", get_api_key()))
+    let resp = req
+        .header("Authorization", format!("Bearer {}", get_api_key()))
         .header("Content-Type", "application/json")
-        .send()
+        .send();
+    match resp {
+        Ok(resp) => {
+            match resp.status() {
+                // StatusCode::OK => Ok(resp),
+                StatusCode::TOO_MANY_REQUESTS => {
+                    tracing::error!("Error: {}", &resp.text().unwrap());
+                    panic!("Too many requests")
+                }
+                _ => {
+                    // tracing::error!("Error: {}", &resp.text().unwrap());
+                    Ok(resp)
+                }
+            }
+        }
+        Err(err) => Err(err),
+    }
 }
 
 fn get_api_key() -> String {

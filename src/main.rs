@@ -136,7 +136,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ..default()
                 }),
             MainPlugin,
-            DebugPlugin,
+            // DebugPlugin,
         ))
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_plugins(DefaultPickingPlugins)

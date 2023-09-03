@@ -17,7 +17,7 @@ pub(crate) fn add_waypoints(mut commands: Commands, asset_server: Res<AssetServe
             WaypointType::ORBITAL_STATION => (asset_server.load("other/space_station.png"), Some(Vec2::new(3.0, 3.0))),
             WaypointType::ASTEROID_FIELD => (asset_server.load("other/asteroids.png"), Some(Vec2::new(4.0, 4.0))),
 
-            _ => (asset_server.load("planets/planet09.png"), Some(Vec2::new(7.0, 7.0))),
+            _ => (asset_server.load("planets/planet09.png"), Some(Vec2::new(10.0, 10.0))),
         };
 
         commands.spawn((

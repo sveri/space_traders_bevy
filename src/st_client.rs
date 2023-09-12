@@ -268,6 +268,8 @@ pub(crate) fn send_post_with_error(url: &str, body: String) -> Result<String> {
 }
 
 fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
+    // let r = format!()
+    tracing::trace!("trying request: {:?}", req);
     let resp = req
         .header("Authorization", format!("Bearer {}", get_api_key()))
         .header("Content-Type", "application/json")
@@ -282,6 +284,7 @@ fn send_with_header(req: RequestBuilder) -> Result<Response, reqwest::Error> {
                 }
                 _ => {
                     // tracing::error!("Error: {}", &resp.text().unwrap());
+                    tracing::trace!("Request failed with response: {:?}", resp);
                     Ok(resp)
                 }
             }
